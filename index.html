@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07142b">
+  <title>Speedy.ng Staging Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="toast" class="toast" role="status"></div>
+
+  <section id="loginView" class="login-wrap">
+    <div class="login-card">
+      <div class="brand-mark">S</div>
+      <p class="eyebrow">SPEEDY.NG · STAGING CONTROL CENTER</p>
+      <h1>Welcome back</h1>
+      <p class="muted">Sign in to manage your Speedy staging platform.</p>
+
+      <form id="loginForm">
+        <label for="email">Administrator email</label>
+        <input id="email" type="email" autocomplete="username"
+          required placeholder="admin@example.com">
+
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password"
+          required placeholder="Enter your password">
+
+        <button class="primary full" type="submit">
+          Sign in securely <span>→</span>
+        </button>
+      </form>
+
+      <p class="small muted">
+        Connected API: <span id="apiShort">speedy-ng-api-staging</span>
+      </p>
+      <p id="loginError" class="error" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div id="appView" class="app-shell hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand">
+        <div class="brand-mark small-mark">S</div>
+        <div>
+          <strong>Speedy<span>.ng</span></strong>
+          <small>STAGING ADMIN CONSOLE</small>
+        </div>
+      </div>
+
+      <div class="side-label">WORKSPACE</div>
+
+      <nav id="nav">
+        <button class="nav-item active" data-page="overview"><span>◫</span> Overview</button>
+        <button class="nav-item" data-page="customers"><span>♙</span> Customers & Wallets</button>
+        <button class="nav-item" data-page="visual"><span>▣</span> Visual Numbers</button>
+        <button class="nav-item" data-page="social-logs"><span>◉</span> Social Logs</button>
+        <button class="nav-item" data-page="boosting"><span>↗</span> Social Boosting</button>
+        <button class="nav-item" data-page="orders"><span>▤</span> Orders & Refunds</button>
+        <button class="nav-item" data-page="payments"><span>₦</span> Flutterwave Payments</button>
+        <button class="nav-item" data-page="api"><span>⌘</span> API Management</button>
+        <button class="nav-item" data-page="pricing"><span>◇</span> Pricing & Markup</button>
+        <button class="nav-item" data-page="exchange"><span>⇄</span> Exchange Rate</button>
+        <button class="nav-item" data-page="email-verification"><span>✉</span> Email Verification</button>
+        <button class="nav-item" data-page="support"><span>☷</span> Announcements & Support</button>
+        <button class="nav-item" data-page="settings"><span>⚙</span> Admin Settings</button>
+        <button class="nav-item" data-page="activity"><span>≋</span> Activity Logs</button>
+      </nav>
+
+      <div class="side-bottom">
+        <div class="secure-dot"></div>
+        <div>
+          <strong>Secure session</strong>
+          <small id="sessionUser">Administrator</small>
+        </div>
+        <button id="logoutBtn" title="Sign out" aria-label="Sign out">↪</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menuBtn" class="icon-btn mobile-only" aria-label="Open menu">☰</button>
+
+        <div>
+          <div class="crumb">Speedy.ng <span>/</span> <b id="pageCrumb">Overview</b></div>
+          <h2 id="pageTitle">Overview</h2>
+        </div>
+
+        <div class="top-actions">
+          <div class="api-pill">
+            <i id="healthDot"></i>
+            <span id="healthText">Checking API…</span>
+          </div>
+          <button id="refreshBtn" class="icon-btn" title="Refresh data">↻</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="overviewPage" class="page">
+          <div class="welcome-row">
+            <div>
+              <p class="eyebrow">YOUR BUSINESS AT A GLANCE</p>
+              <h1>Admin overview</h1>
+              <p class="muted">Monitor your staging platform from one secure place.</p>
+            </div>
+            <div class="date-chip" id="todayDate">Today</div>
+          </div>
+
+          <div id="summaryCards" class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-head"><span>Total customers</span><span class="stat-icon">♙</span></div>
+              <strong>—</strong><small>Waiting for API summary</small>
+            </div>
+            <div class="stat-card">
+              <div class="stat-head"><span>Total orders</span><span class="stat-icon">▤</span></div>
+              <strong>—</strong><small>Waiting for API summary</small>
+            </div>
+            <div class="stat-card">
+              <div class="stat-head"><span>Transactions</span><span class="stat-icon">↗</span></div>
+              <strong>—</strong><small>Waiting for API summary</small>
+            </div>
+            <div class="stat-card">
+              <div class="stat-head"><span>Platform status</span><span class="stat-icon">✦</span></div>
+              <strong>Online</strong><small>Worker health endpoint connected</small>
+            </div>
+          </div>
+
+          <div class="grid-two">
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>System connections</h3>
+                  <p class="muted">Live checks from your staging Worker</p>
+                </div>
+                <span class="live-label"><i></i> LIVE</span>
+              </div>
+
+              <div class="connection-row">
+                <div class="connection-icon">API</div>
+                <div class="connection-copy">
+                  <b>Speedy Staging API Worker</b>
+                  <small>speedy-ng-api-staging.unicespotify.workers.dev</small>
+                </div>
+                <span id="workerStatus" class="status pending">Checking</span>
+              </div>
+
+              <div class="connection-row">
+                <div class="connection-icon">D1</div>
+                <div class="connection-copy">
+                  <b>Speedy staging database</b>
+                  <small>Database status is reported by the Worker</small>
+                </div>
+                <span class="status neutral">Via Worker</span>
+              </div>
+
+              <div class="connection-row">
+                <div class="connection-icon">₦</div>
+                <div class="connection-copy">
+                  <b>Flutterwave</b>
+                  <small>Requires a dedicated secure backend status route</small>
+                </div>
+                <span class="status neutral">Not verified</span>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>Quick actions</h3>
+                  <p class="muted">Jump to common controls</p>
+                </div>
+              </div>
+
+              <button class="quick-action" data-goto="settings">
+                <span class="quick-icon">⚙</span>
+                <span><b>Platform settings</b><small>Load or update settings supported by the API</small></span>
+                <span>→</span>
+              </button>
+
+              <button class="quick-action" data-goto="activity">
+                <span class="quick-icon">≋</span>
+                <span><b>Admin activity</b><small>Review recorded admin actions</small></span>
+                <span>→</span>
+              </button>
+
+              <button class="quick-action" data-goto="api">
+                <span class="quick-icon">⌘</span>
+                <span><b>Provider controls</b><small>See required backend connections</small></span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="panel note-panel">
+            <div class="note-symbol">i</div>
+            <div>
+              <b>Backend status</b>
+              <p>
+                This dashboard uses the staging Worker. Features will only be
+                available when their secure backend routes have been implemented
+                and tested.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="genericPage" class="page hidden">
+          <div class="page-intro">
+            <div>
+              <p class="eyebrow" id="sectionEyebrow">CONTROL CENTER</p>
+              <h1 id="sectionHeading">Section</h1>
+              <p class="muted" id="sectionDescription"></p>
+            </div>
+            <span id="sectionBadge" class="status neutral">Backend not connected</span>
+          </div>
+          <div id="sectionBody"></div>
+        </section>
+      </div>
+
+      <footer>
+        © <span id="year"></span> Speedy.ng
+        <span>•</span> Staging admin console
+        <span>•</span> Dark by design
+      </footer>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
