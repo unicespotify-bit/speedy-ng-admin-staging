@@ -1618,6 +1618,14 @@ async function testProviderConnection(product, button) {
   // LIVE PROVIDER CATALOGUES
 
 function catalogueArray(value) {
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }
+
   if (Array.isArray(value)) return value;
 
   if (value && typeof value === "object") {
@@ -1630,8 +1638,19 @@ function catalogueArray(value) {
       "categories",
       "listings"
     ]) {
-      if (Array.isArray(value[key])) return value[key];
+      if (value[key] !== undefined) {
+        const result = catalogueArray(value[key]);
+        if (result.length) return result;
+      }
     }
+
+    return Object.entries(value).map(([id, item]) => {
+      if (item && typeof item === "object") {
+        return { id, ...item };
+      }
+
+      return { id, name: String(item) };
+    });
   }
 
   return [];
@@ -1642,13 +1661,16 @@ function catalogueLabel(item) {
 
   return String(
     item.name ||
-    item.title ||
+    item.eng ||
+    item.country_name ||
+    item.countryName ||
     item.country ||
+    item.title ||
     item.service ||
     item.category_name ||
     item.id ||
     "Unnamed item"
-  );
+  ).trim();
 }
 
 async function loadLiveCatalogue() {
