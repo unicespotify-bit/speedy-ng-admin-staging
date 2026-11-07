@@ -393,7 +393,8 @@ const loaders = {
       exchange: loadSettings,
       settings: loadSettings,
       "email-verification": loadEmailVerification,
-      activity: loadAudit
+      activity: loadAudit,
+      support: loadAnnouncements
     };
 
     if (loaders[page]) {
