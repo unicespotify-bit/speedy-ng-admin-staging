@@ -1104,7 +1104,34 @@
         `<div class="panel">${escapeHtml(error.message)}</div>`;
     }
   }
+async function testProviderConnection(product, button) {
+    if (!["visual_numbers", "social_logs"].includes(product)) {
+      toast("Unsupported provider test.", true);
+      return;
+    }
 
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Testing...";
+    }
+
+    try {
+      const result = await api("/api/admin/providers/test", {
+        method: "POST",
+        body: JSON.stringify({ product })
+      });
+
+      toast(result.message || "Connection successful.");
+      await loadProviders();
+
+    } catch (error) {
+      toast(error.message || "Connection test failed.", true);
+      await loadProviders();
+
+    } finally {
+      if (button) button.disabled = false;
+    }
+}
   // PRICING
 
   function renderPricing() {
