@@ -15,6 +15,8 @@
     customers: [],
     orders: [],
     deposits: [],
+    announcements: [],
+    editingAnnouncementId: null,
     pricing: [],
     providers: null,
     settings: {},
