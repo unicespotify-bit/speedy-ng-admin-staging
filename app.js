@@ -1853,12 +1853,16 @@ async function prepareLiveCatalogue() {
               <option value="">Select country</option>
               ${countries.map(item => {
   const countryName = typeof item === "string"
-    ? item
-    : item.country_name || item.countryName || item.country || item.name || item.eng || item.code || item.id;
+  ? item
+  : item.country_name || item.countryName || item.country || item.name || item.eng || item.code || item.id;
 
-  const value = String(countryName || "").trim().toLowerCase();
+const countryId = typeof item === "object"
+  ? item.country_id ?? item.id ?? item.country_code ?? item.code ?? countryName
+  : item;
 
-  return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}</option>`;
+const value = String(countryId || "").trim();
+
+return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}</option>`;
 }).join("")}
             </select>
           </div>
