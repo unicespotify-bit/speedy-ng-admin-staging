@@ -1520,6 +1520,7 @@ async function testProviderConnection(product, button) {
         </div>
       `
     )}
+    ${panel(
       "Pricing rules",
       "Search existing rules and add supported markup rules.",
       `
