@@ -1151,7 +1151,78 @@ async function testProviderConnection(product, button) {
   // PRICING
 
   function renderPricing() {
-    return panel(
+  return `
+    ${panel(
+      "Global Markup Prices",
+      "Set a separate default markup for each product.",
+      `
+        <div class="field-grid">
+
+          <div class="panel">
+            <h3>Visual Numbers — YoungPG</h3>
+            <div class="field">
+              <label for="globalVisualType">Markup type</label>
+              <select id="globalVisualType">
+                <option value="percent">Percentage</option>
+                <option value="fixed">Fixed amount</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="globalVisualValue">Markup value</label>
+              <input id="globalVisualValue" type="number"
+                min="0" step="0.01" placeholder="0">
+            </div>
+            <button class="primary" id="saveGlobalVisual">
+              Save Visual Numbers Markup
+            </button>
+          </div>
+
+          <div class="panel">
+            <h3>Social Logs — YoungPG</h3>
+            <div class="field">
+              <label for="globalLogsType">Markup type</label>
+              <select id="globalLogsType">
+                <option value="percent">Percentage</option>
+                <option value="fixed">Fixed amount</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="globalLogsValue">Markup value</label>
+              <input id="globalLogsValue" type="number"
+                min="0" step="0.01" placeholder="0">
+            </div>
+            <button class="primary" id="saveGlobalLogs">
+              Save Social Logs Markup
+            </button>
+          </div>
+
+          <div class="panel">
+            <h3>Social Boosting — Nexar</h3>
+            <div class="field">
+              <label for="globalBoostType">Markup type</label>
+              <select id="globalBoostType">
+                <option value="percent">Percentage</option>
+                <option value="fixed">Fixed amount</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="globalBoostValue">Markup value</label>
+              <input id="globalBoostValue" type="number"
+                min="0" step="0.01" placeholder="0">
+            </div>
+            <button class="primary" id="saveGlobalBoost">
+              Save Social Boosting Markup
+            </button>
+            <p class="muted">
+              This setting is prepared for when Nexar API access is configured.
+            </p>
+          </div>
+
+        </div>
+      `
+    )}
+
+    ${panel(
       "Pricing rules",
       "Search existing rules and add supported markup rules.",
       `
@@ -1191,7 +1262,7 @@ async function testProviderConnection(product, button) {
             <select id="ruleProvider">
               <option value="youngpg_virtual">YoungPG Visual Numbers</option>
               <option value="youngpg_media">YoungPG Social Logs</option>
-              <option value="nexar">Nexa</option>
+              <option value="nexar">Nexar</option>
               <option value="*">All providers</option>
             </select>
           </div>
@@ -1243,152 +1314,8 @@ async function testProviderConnection(product, button) {
           the actual customer checkout price.
         </p>
       `
-    );
-  }
-
-  async function loadPricing() {
-    const holder = $("pricingTable");
-    if (!holder) return;
-
-    holder.innerHTML =
-      `<div class="empty-state">Loading pricing rules…</div>`;
-
-    try {
-      const result = await api("/api/admin/pricing/rules");
-      state.pricing = result.rules || [];
-
-      renderPricingTable();
-
-    } catch (error) {
-      holder.innerHTML =
-        `<div class="empty-state">${escapeHtml(error.message)}</div>`;
-    }
-  }
-
-  function renderPricingTable() {
-    const holder = $("pricingTable");
-    if (!holder) return;
-
-    const query = ($("pricingSearch")?.value || "").toLowerCase();
-    const product = $("pricingProductFilter")?.value || "";
-
-    const rows = state.pricing.filter(rule => {
-      const text = [
-        rule.provider,
-        rule.product,
-        rule.country,
-        rule.service
-      ].join(" ").toLowerCase();
-
-      return text.includes(query) &&
-        (!product || rule.product === product);
-    });
-
-    if (!rows.length) {
-      holder.innerHTML =
-        `<div class="empty-state">No matching pricing rules.</div>`;
-      return;
-    }
-
-    holder.innerHTML = `
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Provider</th>
-            <th>Product</th>
-            <th>Country</th>
-            <th>Service</th>
-            <th>Markup type</th>
-            <th>Markup value</th>
-            <th>Active</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(rule => `
-            <tr>
-              <td>${escapeHtml(rule.provider)}</td>
-              <td>${escapeHtml(rule.product)}</td>
-              <td>${escapeHtml(rule.country)}</td>
-              <td>${escapeHtml(rule.service)}</td>
-              <td>${escapeHtml(rule.markup_type)}</td>
-              <td>${escapeHtml(rule.markup_value)}</td>
-              <td>${rule.active ? statusBadge("Active") : statusBadge("Inactive")}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    `;
-  }
-
-  async function savePricingRule() {
-    const value = Number($("ruleValue").value);
-
-    if (!Number.isFinite(value) || value < 0) {
-      toast("Enter a valid markup value.", true);
-      return;
-    }
-
-    const payload = {
-      provider: $("ruleProvider").value,
-      product: $("ruleProduct").value,
-      country: $("ruleCountry").value.trim() || "*",
-      service: $("ruleService").value.trim() || "*",
-      markup_type: $("ruleType").value,
-      markup_value: value,
-      active: true
-    };
-
-    const button = $("savePricingRuleBtn");
-    button.disabled = true;
-    button.textContent = "Saving…";
-
-    try {
-      await api("/api/admin/pricing/rules", {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-
-      toast("Pricing rule saved.");
-      await loadPricing();
-
-    } catch (error) {
-      toast("Could not save pricing rule: " + error.message, true);
-    } finally {
-      button.disabled = false;
-      button.textContent = "Save pricing rule";
-    }
-  }
-
-  // SETTINGS AND EXCHANGE RATE
-
-  function renderSettings() {
-    return panel(
-      "Platform settings",
-      "Only supported settings are displayed here.",
-      `
-        <div class="field">
-          <label for="settingsJson">Settings returned by Worker</label>
-          <textarea id="settingsJson"
-            spellcheck="false"
-            placeholder="Loading settings…"></textarea>
-        </div>
-
-        <div class="form-actions">
-          <button class="secondary" id="reloadSettingsBtn">
-            Reload settings
-          </button>
-
-          <button class="primary" id="saveSettingsBtn">
-            Save settings
-          </button>
-        </div>
-
-        <div class="callout">
-          Do not paste API keys, passwords, Flutterwave secrets
-          or provider credentials into this editor.
-        </div>
-      `
-    );
+    )}
+  `;
   }
 
   function renderExchange() {
