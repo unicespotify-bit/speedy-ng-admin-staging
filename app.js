@@ -1615,6 +1615,253 @@ async function testProviderConnection(product, button) {
     )}
   `;
   }
+  // LIVE PROVIDER CATALOGUES
+
+function catalogueArray(value) {
+  if (Array.isArray(value)) return value;
+
+  if (value && typeof value === "object") {
+    for (const key of [
+      "data",
+      "items",
+      "results",
+      "countries",
+      "services",
+      "categories",
+      "listings"
+    ]) {
+      if (Array.isArray(value[key])) return value[key];
+    }
+  }
+
+  return [];
+}
+
+function catalogueLabel(item) {
+  if (typeof item === "string") return item;
+
+  return String(
+    item.name ||
+    item.title ||
+    item.country ||
+    item.service ||
+    item.category_name ||
+    item.id ||
+    "Unnamed item"
+  );
+}
+
+async function loadLiveCatalogue() {
+  const product = $("liveCatalogueProduct")?.value;
+  const holder = $("liveCatalogueResults");
+  const controls = $("liveCatalogueControls");
+
+  if (!holder) return;
+
+  if (product === "social_boosting") {
+    holder.innerHTML =
+      `<div class="empty-state">Nexar API is not configured yet. Live Social Boosting catalogue is unavailable.</div>`;
+    return;
+  }
+
+  holder.innerHTML =
+    `<div class="empty-state">Loading the latest catalogue…</div>`;
+
+  try {
+    if (product === "visual_numbers") {
+      const country = $("liveCatalogueCountry")?.value || "";
+      const service = $("liveCatalogueService")?.value || "";
+
+      if (!country || !service) {
+        holder.innerHTML =
+          `<div class="empty-state">Select a country and service first.</div>`;
+        return;
+      }
+
+      const result = await api(
+        `/api/admin/catalogue/visual-numbers/prices?country=${encodeURIComponent(country)}&service=${encodeURIComponent(service)}`
+      );
+
+      const prices = catalogueArray(result.prices);
+
+      if (!prices.length) {
+        holder.innerHTML =
+          `<div class="empty-state">No prices were returned for this selection.</div>`;
+        return;
+      }
+
+      holder.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th>Service</th>
+              <th>Price</th>
+              <th>Available</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${prices.map(item => `
+              <tr>
+                <td>${escapeHtml(country)}</td>
+                <td>${escapeHtml(service)}</td>
+                <td>${escapeHtml(String(item.price ?? item.cost ?? "—"))}</td>
+                <td>${escapeHtml(String(item.count ?? item.available ?? item.stock ?? "—"))}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+      return;
+    }
+
+    if (product === "social_logs") {
+      const search = $("liveCatalogueSearch")?.value || "";
+      const category = $("liveCatalogueCategory")?.value || "";
+
+      const params = new URLSearchParams({
+        search,
+        category_id: category,
+        page: "1",
+        per_page: "50"
+      });
+
+      const result = await api(
+        `/api/admin/catalogue/social-logs/listings?${params.toString()}`
+      );
+
+      const listings = catalogueArray(result.listings);
+
+      if (!listings.length) {
+        holder.innerHTML =
+          `<div class="empty-state">No Social Logs listings were returned.</div>`;
+        return;
+      }
+
+      holder.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Listing</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${listings.map(item => `
+              <tr>
+                <td>${escapeHtml(catalogueLabel(item))}</td>
+                <td>${escapeHtml(String(item.category_name || item.category || "—"))}</td>
+                <td>${escapeHtml(String(item.price ?? item.amount ?? "—"))}</td>
+                <td>${escapeHtml(String(item.stock ?? item.quantity ?? item.available ?? "—"))}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+  } catch (error) {
+    holder.innerHTML =
+      `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+  }
+}
+
+async function prepareLiveCatalogue() {
+  const product = $("liveCatalogueProduct")?.value;
+  const controls = $("liveCatalogueControls");
+  const holder = $("liveCatalogueResults");
+
+  if (!controls || !holder) return;
+
+  holder.innerHTML =
+    `<div class="empty-state">Choose your catalogue options and load the catalogue.</div>`;
+
+  if (product === "social_boosting") {
+    controls.innerHTML =
+      `<p class="muted">Nexar API is not configured. Social Boosting will be available after API credentials are added.</p>`;
+    return;
+  }
+
+  controls.innerHTML =
+    `<div class="empty-state">Loading catalogue options…</div>`;
+
+  try {
+    if (product === "visual_numbers") {
+      const [countryResult, serviceResult] = await Promise.all([
+        api("/api/admin/catalogue/visual-numbers/countries"),
+        api("/api/admin/catalogue/visual-numbers/services")
+      ]);
+
+      const countries = catalogueArray(countryResult.countries);
+      const services = catalogueArray(serviceResult.services);
+
+      controls.innerHTML = `
+        <div class="field-grid">
+          <div class="field">
+            <label for="liveCatalogueCountry">Country</label>
+            <select id="liveCatalogueCountry">
+              <option value="">Select country</option>
+              ${countries.map(item => {
+                const value = typeof item === "string"
+                  ? item
+                  : item.code || item.id || item.country;
+                return `<option value="${escapeHtml(String(value || ""))}">${escapeHtml(catalogueLabel(item))}</option>`;
+              }).join("")}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="liveCatalogueService">Service</label>
+            <select id="liveCatalogueService">
+              <option value="">Select service</option>
+              ${services.map(item => {
+                const value = typeof item === "string"
+                  ? item
+                  : item.code || item.id || item.service;
+                return `<option value="${escapeHtml(String(value || ""))}">${escapeHtml(catalogueLabel(item))}</option>`;
+              }).join("")}
+            </select>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    if (product === "social_logs") {
+      const result = await api(
+        "/api/admin/catalogue/social-logs/categories"
+      );
+
+      const categories = catalogueArray(result.categories);
+
+      controls.innerHTML = `
+        <div class="field-grid">
+          <div class="field">
+            <label for="liveCatalogueCategory">Category</label>
+            <select id="liveCatalogueCategory">
+              <option value="">All categories</option>
+              ${categories.map(item => `
+                <option value="${escapeHtml(String(item.id || item.category_id || ""))}">
+                  ${escapeHtml(catalogueLabel(item))}
+                </option>
+              `).join("")}
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="liveCatalogueSearch">Search listings</label>
+            <input id="liveCatalogueSearch"
+              placeholder="Search Social Logs">
+          </div>
+        </div>
+      `;
+    }
+  } catch (error) {
+    controls.innerHTML =
+      `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+  }
+  }
 async function loadPricing() {
   const holder = $("pricingTable");
   if (!holder) return;
