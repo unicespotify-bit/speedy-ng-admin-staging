@@ -1063,6 +1063,7 @@
                   <th>Provider / Product</th>
                   <th>Status</th>
                   <th>Last Test Result</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -1083,6 +1084,17 @@
                       <td>${escapeHtml(label)}</td>
                       <td>${statusBadge(status)}</td>
                       <td>${escapeHtml(details)}</td>
+                      <td>
+  ${label.includes("YoungPG — Visual Numbers") ||
+    label.includes("YoungPG — Social Logs")
+      ? `<button class="secondary provider-test-btn"
+          data-product="${label.includes("Visual Numbers")
+            ? "visual_numbers"
+            : "social_logs"}">
+          Test Connection
+        </button>`
+      : "—"}
+</td>
                     </tr>
                   `;
                 }).join("")}
