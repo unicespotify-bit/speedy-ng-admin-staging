@@ -1110,7 +1110,11 @@
 
       const refresh = $("refreshProviderStatusBtn");
       if (refresh) refresh.onclick = loadProviders;
-
+holder.querySelectorAll(".provider-test-btn").forEach(button => {
+  button.onclick = () => {
+    testProviderConnection(button.dataset.product, button);
+  };
+});
     } catch (error) {
       holder.innerHTML =
         `<div class="panel">${escapeHtml(error.message)}</div>`;
