@@ -1789,8 +1789,8 @@ async function loadLiveCatalogue() {
               <tr>
                 <td>${escapeHtml(catalogueLabel(item))}</td>
                 <td>${escapeHtml(String(item.category_name || item.category || "—"))}</td>
-                <td>${escapeHtml(String(item.price ?? item.amount ?? "—"))}</td>
-                <td>${escapeHtml(String(item.stock ?? item.quantity ?? item.available ?? "—"))}</td>
+                <td>${escapeHtml(String(item.price_ngn ?? item.price ?? item.amount ?? "—"))}</td>
+                <td>${escapeHtml(String(item.available_stock ?? item.stock ?? item.quantity ?? item.available ?? "—"))}</td>
               </tr>
             `).join("")}
           </tbody>
