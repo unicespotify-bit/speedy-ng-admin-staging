@@ -1655,7 +1655,35 @@ async function savePricingRule() {
     if (page === "pricing") {
       $("reloadPricingBtn").onclick = loadPricing;
       $("savePricingRuleBtn").onclick = savePricingRule;
+$("saveGlobalVisual").onclick = () =>
+  saveGlobalMarkup(
+    "youngpg_virtual",
+    "visual_numbers",
+    "globalVisualType",
+    "globalVisualValue",
+    "saveGlobalVisual",
+    "Save Visual Numbers Markup"
+  );
 
+$("saveGlobalLogs").onclick = () =>
+  saveGlobalMarkup(
+    "youngpg_media",
+    "social_logs",
+    "globalLogsType",
+    "globalLogsValue",
+    "saveGlobalLogs",
+    "Save Social Logs Markup"
+  );
+
+$("saveGlobalBoost").onclick = () =>
+  saveGlobalMarkup(
+    "nexar",
+    "social_boosting",
+    "globalBoostType",
+    "globalBoostValue",
+    "saveGlobalBoost",
+    "Save Social Boosting Markup"
+  );
       $("pricingSearch").addEventListener(
         "input",
         renderPricingTable
