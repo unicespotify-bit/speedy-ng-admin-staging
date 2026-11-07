@@ -1704,36 +1704,50 @@ async function loadLiveCatalogue() {
         `/api/admin/catalogue/visual-numbers/prices?country=${encodeURIComponent(country)}&service=${encodeURIComponent(service)}`
       );
 
-      const prices = catalogueArray(result.prices);
+      const inventory = result.inventory;
 
-      if (!prices.length) {
+      if (!inventory) {
         holder.innerHTML =
-          `<div class="empty-state">No prices were returned for this selection.</div>`;
+          `<div class="empty-state">No verified inventory information was returned. Please try again.</div>`;
         return;
       }
 
+      const stock = inventory.available === null
+        ? "Not provided by provider"
+        : Number(inventory.available).toLocaleString();
+
       holder.innerHTML = `
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Country</th>
-              <th>Service</th>
-              <th>Price</th>
-              <th>Available</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${prices.map(item => `
-              <tr>
-                <td>${escapeHtml(country)}</td>
-                <td>${escapeHtml(service)}</td>
-                <td>${escapeHtml(String(item.price ?? item.cost ?? "—"))}</td>
-                <td>${escapeHtml(String(item.count ?? item.available ?? item.stock ?? "—"))}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Available Numbers</span>
+            <strong>${escapeHtml(stock)}</strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Provider Price (NGN)</span>
+            <strong>₦${escapeHtml(Number(inventory.provider_price_ngn).toLocaleString())}</strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Provider Price (USD)</span>
+            <strong>$${escapeHtml(Number(inventory.provider_price_usd).toFixed(4))}</strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Customer Price (USD)</span>
+            <strong>$${escapeHtml(Number(inventory.customer_price_usd).toFixed(2))}</strong>
+          </div>
+        </div>
+
+        <div class="empty-state">
+          Exchange rate: ₦${escapeHtml(Number(inventory.exchange_rate_ngn_per_usd).toLocaleString())} = $1
+          <br>
+          Country: ${escapeHtml(country)}
+          <br>
+          Service: ${escapeHtml(service)}
+        </div>
       `;
+
       return;
     }
 
