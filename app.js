@@ -2225,6 +2225,11 @@ function renderSettings() {
     }
 
     if (page === "pricing") {
+      $("liveCatalogueProduct").onchange = prepareLiveCatalogue;
+      $("loadLiveCatalogueBtn").onclick = loadLiveCatalogue;
+
+      prepareLiveCatalogue();
+      
       $("reloadPricingBtn").onclick = loadPricing;
       $("savePricingRuleBtn").onclick = savePricingRule;
 $("saveGlobalVisual").onclick = () =>
