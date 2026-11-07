@@ -1429,6 +1429,42 @@ async function savePricingRule() {
     button.textContent = "Save pricing rule";
   }
                    }
+  async function saveGlobalMarkup(provider, product, typeId, valueId, buttonId, label) {
+  const value = Number($(valueId).value);
+
+  if (!Number.isFinite(value) || value < 0) {
+    toast("Enter a valid markup value.", true);
+    return;
+  }
+
+  const button = $(buttonId);
+  button.disabled = true;
+  button.textContent = "Saving…";
+
+  try {
+    await api("/api/admin/pricing/rules", {
+      method: "POST",
+      body: JSON.stringify({
+        provider,
+        product,
+        country: "*",
+        service: "*",
+        markup_type: $(typeId).value,
+        markup_value: value,
+        active: true
+      })
+    });
+
+    toast(label + " markup saved successfully.");
+    await loadPricing();
+
+  } catch (error) {
+    toast("Could not save " + label + " markup: " + error.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = label;
+  }
+  }
   function renderExchange() {
     return panel(
       "USD exchange rate",
