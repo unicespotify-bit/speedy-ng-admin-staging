@@ -1788,7 +1788,13 @@ async function loadLiveCatalogue() {
             ${listings.map(item => `
               <tr>
                 <td>${escapeHtml(catalogueLabel(item))}</td>
-                Update Social Logs catalogue rendering to recognize YoungPG NGN price and available stock fields. Preserve existing fallback fields for compatibility.
+                <td>${escapeHtml(String(
+  item.category_name ||
+  (item.category && typeof item.category === "object"
+    ? catalogueLabel(item.category)
+    : item.category) ||
+  "—"
+))}</td>
                 <td>${escapeHtml(String(item.price_ngn ?? item.price ?? item.amount ?? "—"))}</td>
                 <td>${escapeHtml(String(item.available_stock ?? item.stock ?? item.quantity ?? item.available ?? "—"))}</td>
               </tr>
