@@ -1492,7 +1492,7 @@ async function testProviderConnection(product, button) {
     )}
 
     ${panel(
-      ${panel(
+      
       "Live Provider Catalogues",
       "Load the latest available products directly from connected APIs.",
       `
