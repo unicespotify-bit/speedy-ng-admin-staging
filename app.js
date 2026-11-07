@@ -1492,6 +1492,34 @@ async function testProviderConnection(product, button) {
     )}
 
     ${panel(
+      ${panel(
+      "Live Provider Catalogues",
+      "Load the latest available products directly from connected APIs.",
+      `
+        <div class="field-grid">
+          <div class="field">
+            <label for="liveCatalogueProduct">Product</label>
+            <select id="liveCatalogueProduct">
+              <option value="visual_numbers">Visual Numbers — YoungPG</option>
+              <option value="social_logs">Social Logs — YoungPG</option>
+              <option value="social_boosting">Social Boosting — Nexar</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="liveCatalogueControls"></div>
+
+        <button class="primary" id="loadLiveCatalogueBtn">
+          Load Live Catalogue
+        </button>
+
+        <div id="liveCatalogueResults" class="table-wrap">
+          <div class="empty-state">
+            Select a product and load its latest catalogue.
+          </div>
+        </div>
+      `
+    )}
       "Pricing rules",
       "Search existing rules and add supported markup rules.",
       `
