@@ -378,18 +378,19 @@
       renderPage(page);
     }
 
-    const loaders = {
+const loaders = {
       overview: loadOverview,
       customers: loadCustomers,
       orders: loadOrders,
-      payments: loadDeposits,
-      api: loadProviders,
+      payments: loadPaymentsPage,
+      api: loadApiPage,
       visual: loadProviders,
       "social-logs": loadProviders,
       boosting: loadProviders,
       pricing: loadPricing,
       exchange: loadSettings,
       settings: loadSettings,
+      "email-verification": loadEmailVerification,
       activity: loadAudit
     };
 
@@ -1007,7 +1008,172 @@
         `<div class="empty-state">${escapeHtml(error.message)}</div>`;
     }
   }
+// INTEGRATION STATUS AND TESTS
 
+  async function loadIntegrationStatus() {
+    const holder = $("integrationStatusPanel");
+    if (!holder) return;
+
+    holder.innerHTML =
+      `<div class="panel">Checking integrations…</div>`;
+
+    try {
+      const result = await api("/api/admin/integrations/status");
+      const items = result.integrations || {};
+      const fw = items.flutterwave || {};
+      const email = items.email || {};
+
+      holder.innerHTML = `
+        ${panel(
+          "Flutterwave V4",
+          "Payment gateway connection status.",
+          `
+            <p>
+              Status:
+              ${statusBadge(
+                fw.configured ? "Configured" : "Missing configuration"
+              )}
+            </p>
+
+            <p>
+              Environment:
+              ${escapeHtml(fw.environment || "unknown")}
+            </p>
+
+            <button class="primary" id="testFlutterwaveBtn">
+              Test Flutterwave connection
+            </button>
+
+            <div id="flutterwaveTestResult"></div>
+          `
+        )}
+
+        ${panel(
+          "Email delivery — Resend",
+          "Email delivery configuration status.",
+          `
+            <p>
+              Status:
+              ${statusBadge(
+                email.configured ? "Configured" : "Missing configuration"
+              )}
+            </p>
+
+            <p>
+              Sender:
+              ${escapeHtml(email.sender || "Not configured")}
+            </p>
+
+            <button class="secondary" id="testEmailConnectionBtn">
+              Test email connection
+            </button>
+
+            <div id="emailTestResult"></div>
+          `
+        )}
+      `;
+
+      $("testFlutterwaveBtn").onclick = () =>
+        testIntegration("flutterwave", "flutterwaveTestResult");
+
+      $("testEmailConnectionBtn").onclick = () =>
+        testIntegration("email", "emailTestResult");
+
+    } catch (error) {
+      holder.innerHTML =
+        `<div class="callout">${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async function testIntegration(service, resultId) {
+    const holder = $(resultId);
+    if (!holder) return;
+
+    holder.textContent = "Testing connection…";
+
+    try {
+      const result = await api(
+        "/api/admin/integrations/test",
+        {
+          method: "POST",
+          body: JSON.stringify({ service })
+        }
+      );
+
+      holder.innerHTML = `
+        <div class="callout">
+          ${statusBadge(result.status || "unknown")}
+          ${escapeHtml(result.message || "Connection test completed.")}
+        </div>
+      `;
+
+    } catch (error) {
+      holder.innerHTML =
+        `<div class="callout">${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  async function loadPaymentsPage() {
+    await Promise.all([
+      loadIntegrationStatus(),
+      loadDeposits()
+    ]);
+  }
+
+  async function loadApiPage() {
+    await Promise.all([
+      loadIntegrationStatus(),
+      loadProviders()
+    ]);
+  }
+
+  async function loadEmailVerification() {
+    const holder = $("emailVerificationPanel");
+    if (!holder) return;
+
+    holder.innerHTML =
+      `<div class="panel">Checking email configuration…</div>`;
+
+    try {
+      const result = await api("/api/admin/integrations/status");
+      const email = result.integrations?.email || {};
+
+      holder.innerHTML = panel(
+        "Customer email verification",
+        "Automated email verification configuration.",
+        `
+          <p>
+            Email delivery:
+            ${statusBadge(
+              email.configured ? "Configured" : "Not configured"
+            )}
+          </p>
+
+          <p>
+            Sender address:
+            ${escapeHtml(email.sender || "Not configured")}
+          </p>
+
+          <p>Verification code validity: <strong>10 minutes</strong></p>
+          <p>Resend cooldown: <strong>60 seconds</strong></p>
+          <p>Maximum resend requests: <strong>5 per hour</strong></p>
+
+          <button class="secondary" id="testVerificationEmailBtn">
+            Test email connection
+          </button>
+
+          <div id="verificationEmailTestResult"></div>
+        `
+      );
+
+      $("testVerificationEmailBtn").onclick = () =>
+        testIntegration("email", "verificationEmailTestResult");
+
+    } catch (error) {
+      holder.innerHTML =
+        `<div class="callout">${escapeHtml(error.message)}</div>`;
+    }
+  }
   // PROVIDERS
 
   function renderApi() {
@@ -1695,7 +1861,7 @@ function renderSettings() {
     }
 
     if (page === "payments") {
-      $("reloadDepositsBtn").onclick = loadDeposits;
+      $("reloadDepositsBtn").onclick = loadPaymentsPage;
     }
 
     if (page === "pricing") {
