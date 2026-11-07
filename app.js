@@ -498,14 +498,95 @@ const loaders = {
     `;
   }
 
+  async function loadAnnouncements() {
+    try {
+      const result = await api("/api/admin/announcements");
+      state.announcements = result.announcements || [];
+      renderPage("support");
+    } catch (error) {
+      toast(error.message, true);
+    }
+  }
+
   function renderSupport() {
+    const announcements = state.announcements || [];
+
     return `
       <div class="panel">
-        <h3>Announcements & Support</h3>
-        <p>
-          The announcement management backend still needs
-          to be implemented.
-        </p>
+        <div class="panel-head">
+          <div>
+            <h3>Announcements & Support</h3>
+            <p class="muted">
+              Create and manage announcements for customers.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="announcementTitle">Announcement title</label>
+            <input
+              id="announcementTitle"
+              maxlength="120"
+              placeholder="Enter announcement title"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="announcementType">Announcement type</label>
+            <select id="announcementType">
+              <option value="info">Information</option>
+              <option value="success">Success</option>
+              <option value="warning">Warning</option>
+              <option value="important">Important</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="announcementMessage">Message</label>
+            <textarea
+              id="announcementMessage"
+              maxlength="5000"
+              rows="5"
+              placeholder="Write your announcement"
+            ></textarea>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="createAnnouncementBtn">
+          Publish announcement
+        </button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Existing announcements</h3>
+            <p class="muted">
+              ${announcements.length} announcement(s)
+            </p>
+          </div>
+          <button class="btn" id="reloadAnnouncementsBtn">
+            Refresh
+          </button>
+        </div>
+
+        ${
+          announcements.length
+            ? announcements.map(item => `
+              <div class="activity-item">
+                <div>
+                  <strong>${escapeHtml(item.title)}</strong>
+                  <p>${escapeHtml(item.message)}</p>
+                  <small>${escapeHtml(item.type)} · ${formatDate(item.created_at)}</small>
+                </div>
+                ${statusBadge(
+                  Number(item.is_active) === 1 ? "Active" : "Inactive"
+                )}
+              </div>
+            `).join("")
+            : `<div class="empty-state">No announcements have been created yet.</div>`
+        }
       </div>
     `;
   }
