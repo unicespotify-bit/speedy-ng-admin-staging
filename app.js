@@ -1488,7 +1488,34 @@ async function savePricingRule() {
       `
     );
   }
+function renderSettings() {
+  return panel(
+    "Platform settings",
+    "Review and update the settings stored by the staging Worker.",
+    `
+      <div class="form-actions">
+        <button class="secondary" id="reloadSettingsBtn">
+          Reload settings
+        </button>
+      </div>
 
+      <div class="field">
+        <label for="settingsJson">Settings (JSON)</label>
+        <textarea id="settingsJson" rows="16"
+          spellcheck="false"
+          placeholder="Loading platform settings…"></textarea>
+      </div>
+
+      <button class="primary" id="saveSettingsBtn">
+        Save settings
+      </button>
+
+      <p class="muted">
+        Edit carefully. The settings are saved to the staging Worker.
+      </p>
+    `
+  );
+}
   async function loadSettings() {
     try {
       const result = await api("/api/admin/settings");
