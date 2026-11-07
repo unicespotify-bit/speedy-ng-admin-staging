@@ -1032,112 +1032,77 @@
   }
 
   async function loadProviders() {
-  const holder = $("providerStatusPanel");
-  if (!holder) return;
+    const holder = $("providerStatusPanel");
+    if (!holder) return;
 
-  holder.innerHTML =
-    `<div class="panel">Loading provider status...</div>`;
-
-  try {
-    const result = await api("/api/admin/providers/status");
-    state.providers = result.providers || {};
-
-    const young = state.providers.youngpg || {};
-    const nexa = state.providers.nexar || {};
-
-    const rows = [
-      {
-        label: "YoungPG — Visual Numbers",
-        item: young.visualNumbers,
-        product: "visual_numbers"
-      },
-      {
-        label: "YoungPG — Social Logs",
-        item: young.socialLogs,
-        product: "social_logs"
-      },
-      {
-        label: "Nexa — Official Numbers",
-        item: nexa.officialNumbers,
-        product: null
-      },
-      {
-        label: "Nexa — Social Boosting",
-        item: nexa.socialBoosting,
-        product: "social_boosting"
-      }
-    ];
-
-    holder.innerHTML = panel(
-      "Provider connection status",
-      "Live connection information reported by the staging API.",
-      `
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Provider / product</th>
-                <th>Status</th>
-                <th>Last test result</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows.map(row => {
-                const item = row.item || {};
-
-                const status =
-                  item.verification_status ||
-                  item.status ||
-                  "not_configured";
-
-                const details =
-                  item.last_test_message ||
-                  item.message ||
-                  item.note ||
-                  "No connection test recorded.";
-
-                const button = row.product
-                  ? `<button class="secondary test-provider-btn"
-                       data-product="${row.product}">
-                       Test connection
-                     </button>`
-                  : "API access pending";
-
-                return `
-                  <tr>
-                    <td>${escapeHtml(row.label)}</td>
-                    <td>${statusBadge(status)}</td>
-                    <td>${escapeHtml(details)}</td>
-                    <td>${button}</td>
-                  </tr>
-                `;
-              }).join("")}
-            </tbody>
-          </table>
-        </div>
-
-        <button class="secondary" id="refreshProviderStatusBtn">
-          Refresh provider status
-        </button>
-
-        <div id="providerTestMessage"></div>
-      `
-    );
-
-    document.querySelectorAll(".test-provider-btn")
-      .forEach(button => {
-        button.onclick = () =>
-          testProviderConnection(button.dataset.product, button);
-      });
-
-    const refresh = $("refreshProviderStatusBtn");
-    if (refresh) refresh.onclick = loadProviders;
-
-  } catch (error) {
     holder.innerHTML =
-      `<div class="panel">${escapeHtml(error.message)}</div>`;
-  }
+      `<div class="panel">Loading provider status...</div>`;
+
+    try {
+      const result = await api("/api/admin/providers/status");
+      state.providers = result.providers || {};
+
+      const young = state.providers.youngpg || {};
+      const nexa = state.providers.nexar || {};
+
+      const rows = [
+        ["YoungPG — Visual Numbers", young.visualNumbers],
+        ["YoungPG — Social Logs", young.socialLogs],
+        ["Nexa — Official Numbers", nexa.officialNumbers],
+        ["Nexa — Social Boosting", nexa.socialBoosting]
+      ];
+
+      holder.innerHTML = panel(
+        "Provider connection status",
+        "Connection information reported by the staging API.",
+        `
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Provider / Product</th>
+                  <th>Status</th>
+                  <th>Last Test Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(([label, item]) => {
+                  const status =
+                    item?.verification_status ||
+                    item?.status ||
+                    "not_configured";
+
+                  const details =
+                    item?.last_test_message ||
+                    item?.message ||
+                    item?.note ||
+                    "No connection test recorded.";
+
+                  return `
+                    <tr>
+                      <td>${escapeHtml(label)}</td>
+                      <td>${statusBadge(status)}</td>
+                      <td>${escapeHtml(details)}</td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+
+          <button class="secondary" id="refreshProviderStatusBtn">
+            Refresh Provider Status
+          </button>
+        `
+      );
+
+      const refresh = $("refreshProviderStatusBtn");
+      if (refresh) refresh.onclick = loadProviders;
+
+    } catch (error) {
+      holder.innerHTML =
+        `<div class="panel">${escapeHtml(error.message)}</div>`;
+    }
   }
 
   // PRICING
