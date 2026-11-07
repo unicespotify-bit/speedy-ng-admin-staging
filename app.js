@@ -379,19 +379,21 @@
     }
 
     const loaders = {
-      overview: loadOverview,
-      customers: loadCustomers,
-      orders: loadOrders,
-      payments: loadDeposits,
-      api: loadProviders,
-      visual: loadProviders,
-      "social-logs": loadProviders,
-      boosting: loadProviders,
-      pricing: loadPricing,
-      exchange: loadSettings,
-      settings: loadSettings,
-      activity: loadAudit
-    };
+  overview: loadOverview,
+  customers: loadCustomers,
+  orders: loadOrders,
+  payments: loadPaymentsPage,
+  api: loadApiPage,
+  visual: loadVisualPage,
+  "social-logs": loadProviders,
+  boosting: loadProviders,
+  pricing: loadPricing,
+  exchange: loadSettings,
+  settings: loadSettings,
+  "email-verification": loadEmailVerification,
+  support: loadAnnouncements,
+  activity: loadAudit
+};
 
     if (loaders[page]) {
       loaders[page]();
@@ -484,13 +486,24 @@
     attachPageEvents(page);
   }
 
-  function renderNotConnected() {
+  function renderEmailVerification() {
     return `
-      <div class="callout">
-        This section does not yet have a confirmed, usable
-        backend route in the staging Worker. The dashboard
-        will not pretend that settings have been saved or
-        that these features are working.
+      <div id="emailVerificationPanel">
+        <div class="panel">
+          Loading email verification settings…
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSupport() {
+    return `
+      <div class="panel">
+        <h3>Announcements & Support</h3>
+        <p>
+          The announcement management backend still needs
+          to be implemented.
+        </p>
       </div>
     `;
   }
@@ -924,26 +937,30 @@
   // DEPOSITS
 
   function renderPayments() {
-    return panel(
-      "Customer deposits",
-      "Deposit records returned by the staging Worker.",
-      `
-        <button class="secondary" id="reloadDepositsBtn">
-          Refresh deposits
-        </button>
+    return `
+      <div id="integrationStatusPanel">
+        <div class="panel">Checking payment gateway connection…</div>
+      </div>
 
-        <div id="depositsTable" class="table-wrap">
-          <div class="empty-state">Loading deposits…</div>
-        </div>
+      ${panel(
+        "Customer deposits",
+        "Deposit records returned by the staging Worker.",
+        `
+          <button class="secondary" id="reloadDepositsBtn">
+            Refresh deposits
+          </button>
 
-        <div class="callout">
-          This screen is read-only. It does not manually approve
-          payments or credit wallets. Flutterwave payment verification
-          and wallet credit must happen on the Worker after a valid
-          payment confirmation.
-        </div>
-      `
-    );
+          <div id="depositsTable" class="table-wrap">
+            <div class="empty-state">Loading deposits…</div>
+          </div>
+
+          <div class="callout">
+            Payment verification and wallet credit must be
+            confirmed by the backend.
+          </div>
+        `
+      )}
+    `;
   }
 
   async function loadDeposits() {
@@ -997,9 +1014,13 @@
 
   function renderApi() {
     return `
+      <div id="integrationStatusPanel">
+        <div class="panel">Checking integrations…</div>
+      </div>
+
       <div class="callout">
-        Provider assignments: YoungPG handles Visual Numbers and
-        Social Logs. Nexa handles Official Numbers and Social Boosting.
+        YoungPG handles Visual Numbers and Social Logs.
+        Nexa handles Official Numbers and Social Boosting.
         Nexa is not used for Social Logs.
       </div>
 
