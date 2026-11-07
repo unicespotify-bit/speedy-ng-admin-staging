@@ -2003,6 +2003,37 @@ $("saveGlobalBoost").onclick = () =>
     if (page === "activity") {
       $("reloadAuditBtn").onclick = loadAudit;
     }
+    if (page === "support") {
+      $("createAnnouncementBtn").onclick = async () => {
+        const title = $("announcementTitle").value.trim();
+        const message = $("announcementMessage").value.trim();
+        const type = $("announcementType").value;
+
+        if (!title || !message) {
+          toast("Enter an announcement title and message.", true);
+          return;
+        }
+
+        const button = $("createAnnouncementBtn");
+        button.disabled = true;
+
+        try {
+          await api("/api/admin/announcements", {
+            method: "POST",
+            body: JSON.stringify({ title, message, type })
+          });
+
+          toast("Announcement published successfully.");
+          await loadAnnouncements();
+        } catch (error) {
+          toast(error.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      };
+
+      $("reloadAnnouncementsBtn").onclick = loadAnnouncements;
+    }
   }
 
   // NAVIGATION
