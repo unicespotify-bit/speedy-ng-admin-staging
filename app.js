@@ -1821,6 +1821,13 @@ async function prepareLiveCatalogue() {
       controls.innerHTML = `
         <div class="field-grid">
           <div class="field">
+            <label for="liveCatalogueCountrySearch">Search country</label>
+            <input
+              id="liveCatalogueCountrySearch"
+              type="search"
+              placeholder="Type a country name..."
+            >
+
             <label for="liveCatalogueCountry">Country</label>
             <select id="liveCatalogueCountry">
               <option value="">Select country</option>
@@ -1834,6 +1841,13 @@ async function prepareLiveCatalogue() {
           </div>
 
           <div class="field">
+            <label for="liveCatalogueServiceSearch">Search service</label>
+            <input
+              id="liveCatalogueServiceSearch"
+              type="search"
+              placeholder="Type a service name..."
+            >
+
             <label for="liveCatalogueService">Service</label>
             <select id="liveCatalogueService">
               <option value="">Select service</option>
@@ -1847,6 +1861,29 @@ async function prepareLiveCatalogue() {
           </div>
         </div>
       `;
+
+      const filterCatalogueSelect = (searchId, selectId) => {
+        $(searchId).addEventListener("input", event => {
+          const query = event.target.value.toLowerCase().trim();
+
+          Array.from($(selectId).options).forEach((option, index) => {
+            if (index === 0) return;
+            option.hidden = !option.textContent.toLowerCase().includes(query);
+          });
+
+          $(selectId).value = "";
+        });
+      };
+
+      filterCatalogueSelect(
+        "liveCatalogueCountrySearch",
+        "liveCatalogueCountry"
+      );
+
+      filterCatalogueSelect(
+        "liveCatalogueServiceSearch",
+        "liveCatalogueService"
+      );
       return;
     }
 
