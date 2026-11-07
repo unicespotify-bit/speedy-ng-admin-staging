@@ -379,21 +379,19 @@
     }
 
     const loaders = {
-  overview: loadOverview,
-  customers: loadCustomers,
-  orders: loadOrders,
-  payments: loadPaymentsPage,
-  api: loadApiPage,
-  visual: loadVisualPage,
-  "social-logs": loadProviders,
-  boosting: loadProviders,
-  pricing: loadPricing,
-  exchange: loadSettings,
-  settings: loadSettings,
-  "email-verification": loadEmailVerification,
-  support: loadAnnouncements,
-  activity: loadAudit
-};
+      overview: loadOverview,
+      customers: loadCustomers,
+      orders: loadOrders,
+      payments: loadDeposits,
+      api: loadProviders,
+      visual: loadProviders,
+      "social-logs": loadProviders,
+      boosting: loadProviders,
+      pricing: loadPricing,
+      exchange: loadSettings,
+      settings: loadSettings,
+      activity: loadAudit
+    };
 
     if (loaders[page]) {
       loaders[page]();
@@ -475,8 +473,8 @@
       exchange: renderExchange,
       settings: renderSettings,
       activity: renderActivity,
-      "email-verification": renderNotConnected,
-      support: renderNotConnected
+      "email-verification": renderEmailVerification,
+      support: renderSupport
     };
 
     body.innerHTML = renderers[page]
