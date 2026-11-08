@@ -1808,7 +1808,6 @@ async function loadLiveCatalogue() {
       `<div class="empty-state">${escapeHtml(error.message)}</div>`;
   }
 }
-
 async function prepareLiveCatalogue() {
   const product = $("liveCatalogueProduct")?.value;
   const controls = $("liveCatalogueControls");
@@ -1825,11 +1824,62 @@ async function prepareLiveCatalogue() {
     return;
   }
 
-  controls.innerHTML =
-    `<div class="empty-state">Loading catalogue options…</div>`;
+  if (product === "visual_numbers") {
+    controls.innerHTML = `
+      <div class="field-grid">
+        <div class="field">
+          <label for="liveCatalogueCountrySearch">Search country</label>
+          <input id="liveCatalogueCountrySearch" type="search"
+            placeholder="Type a country name...">
 
-  try {
-    if (product === "visual_numbers") {
+          <label for="liveCatalogueCountry">Country</label>
+          <select id="liveCatalogueCountry">
+            <option value="">Loading countries...</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="liveCatalogueServiceSearch">Search service</label>
+          <input id="liveCatalogueServiceSearch" type="search"
+            placeholder="Type a service name...">
+
+          <label for="liveCatalogueService">Service</label>
+          <select id="liveCatalogueService">
+            <option value="">Loading services...</option>
+          </select>
+        </div>
+      </div>
+
+      <p id="liveCatalogueOptionsStatus" class="muted">
+        Loading YoungPG options...
+      </p>
+    `;
+
+    const filterCatalogueSelect = (searchId, selectId) => {
+      $(searchId).addEventListener("input", event => {
+        const query = event.target.value.toLowerCase().trim();
+
+        Array.from($(selectId).options).forEach((option, index) => {
+          if (index === 0) return;
+
+          option.hidden = !option.textContent
+            .toLowerCase()
+            .includes(query);
+        });
+      });
+    };
+
+    filterCatalogueSelect(
+      "liveCatalogueCountrySearch",
+      "liveCatalogueCountry"
+    );
+
+    filterCatalogueSelect(
+      "liveCatalogueServiceSearch",
+      "liveCatalogueService"
+    );
+
+    try {
       const [countryResult, serviceResult] = await Promise.all([
         api("/api/admin/catalogue/visual-numbers/countries"),
         api("/api/admin/catalogue/visual-numbers/services")
@@ -1838,86 +1888,58 @@ async function prepareLiveCatalogue() {
       const countries = catalogueArray(countryResult.countries);
       const services = catalogueArray(serviceResult.services);
 
-      controls.innerHTML = `
-        <div class="field-grid">
-          <div class="field">
-            <label for="liveCatalogueCountrySearch">Search country</label>
-            <input
-              id="liveCatalogueCountrySearch"
-              type="search"
-              placeholder="Type a country name..."
-            >
+      $("liveCatalogueCountry").innerHTML =
+        `<option value="">Select country</option>` +
+        countries.map(item => {
+          const name = typeof item === "string"
+            ? item
+            : item.country_name ||
+              item.countryName ||
+              item.country ||
+              item.name ||
+              item.eng ||
+              item.code ||
+              item.id;
 
-            <label for="liveCatalogueCountry">Country</label>
-            <select id="liveCatalogueCountry">
-              <option value="">Select country</option>
-              ${countries.map(item => {
-  const countryName = typeof item === "string"
-  ? item
-  : item.country_name || item.countryName || item.country || item.name || item.eng || item.code || item.id;
+          const value = String(name || "").trim().toLowerCase();
 
-const value = String(countryName || "")
-  .trim()
-  .toLowerCase();
+          return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}</option>`;
+        }).join("");
 
-return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}</option>`;
-}).join("")}
-            </select>
-          </div>
+      $("liveCatalogueService").innerHTML =
+        `<option value="">Select service</option>` +
+        services.map(item => {
+          const value = typeof item === "string"
+            ? item
+            : item.code || item.id || item.service;
 
-          <div class="field">
-            <label for="liveCatalogueServiceSearch">Search service</label>
-            <input
-              id="liveCatalogueServiceSearch"
-              type="search"
-              placeholder="Type a service name..."
-            >
+          return `<option value="${escapeHtml(String(value || ""))}">${escapeHtml(catalogueLabel(item))}</option>`;
+        }).join("");
 
-            <label for="liveCatalogueService">Service</label>
-            <select id="liveCatalogueService">
-              <option value="">Select service</option>
-              ${services.map(item => {
-                const value = typeof item === "string"
-                  ? item
-                  : item.code || item.id || item.service;
-                return `<option value="${escapeHtml(String(value || ""))}">${escapeHtml(catalogueLabel(item))}</option>`;
-              }).join("")}
-            </select>
-          </div>
-        </div>
+      $("liveCatalogueOptionsStatus").textContent =
+        countries.length && services.length
+          ? `Loaded ${countries.length} countries and ${services.length} services.`
+          : "YoungPG returned an empty country or service list.";
 
-        <details style="margin-top:16px;">
-          <summary>YoungPG country response (diagnostic)</summary>
-          <pre style="white-space:pre-wrap;overflow-wrap:anywhere;">${escapeHtml(JSON.stringify(countryResult.countries, null, 2))}</pre>
-        </details>
-      `;
+    } catch (error) {
+      $("liveCatalogueCountry").innerHTML =
+        `<option value="">Countries unavailable</option>`;
 
-      const filterCatalogueSelect = (searchId, selectId) => {
-        $(searchId).addEventListener("input", event => {
-          const query = event.target.value.toLowerCase().trim();
+      $("liveCatalogueService").innerHTML =
+        `<option value="">Services unavailable</option>`;
 
-          Array.from($(selectId).options).forEach((option, index) => {
-            if (index === 0) return;
-            option.hidden = !option.textContent.toLowerCase().includes(query);
-          });
-
-          $(selectId).value = "";
-        });
-      };
-
-      filterCatalogueSelect(
-        "liveCatalogueCountrySearch",
-        "liveCatalogueCountry"
-      );
-
-      filterCatalogueSelect(
-        "liveCatalogueServiceSearch",
-        "liveCatalogueService"
-      );
-      return;
+      $("liveCatalogueOptionsStatus").textContent =
+        `The fields are ready, but YoungPG options could not load: ${error.message}`;
     }
 
-    if (product === "social_logs") {
+    return;
+  }
+
+  if (product === "social_logs") {
+    controls.innerHTML =
+      `<div class="empty-state">Loading Social Logs categories...</div>`;
+
+    try {
       const result = await api(
         "/api/admin/catalogue/social-logs/categories"
       );
@@ -1940,17 +1962,20 @@ return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}
 
           <div class="field">
             <label for="liveCatalogueSearch">Search listings</label>
-            <input id="liveCatalogueSearch"
-              placeholder="Search Social Logs">
+            <input
+              id="liveCatalogueSearch"
+              type="search"
+              placeholder="Search Social Logs"
+            >
           </div>
         </div>
       `;
+    } catch (error) {
+      controls.innerHTML =
+        `<div class="empty-state">Social Logs categories could not load: ${escapeHtml(error.message)}</div>`;
     }
-  } catch (error) {
-    controls.innerHTML =
-      `<div class="empty-state">${escapeHtml(error.message)}</div>`;
   }
-  }
+}
 async function loadPricing() {
   const holder = $("pricingTable");
   if (!holder) return;
