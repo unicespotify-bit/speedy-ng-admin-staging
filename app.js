@@ -1691,17 +1691,20 @@ async function loadLiveCatalogue() {
 
   try {
     if (product === "visual_numbers") {
-      const country = $("liveCatalogueCountry")?.value || "";
+      const countrySelect = $("liveCatalogueCountry");
+      const country = countrySelect?.value || "";
+      const countryName =
+        countrySelect?.selectedOptions?.[0]?.textContent?.trim() || "";
       const service = $("liveCatalogueService")?.value || "";
 
-      if (!country || !service) {
+      if (!country || !service || !countryName) {
         holder.innerHTML =
           `<div class="empty-state">Select a country and service first.</div>`;
         return;
       }
 
       const result = await api(
-        `/api/admin/catalogue/visual-numbers/prices?country=${encodeURIComponent(country)}&service=${encodeURIComponent(service)}`
+        `/api/admin/catalogue/visual-numbers/prices?country=${encodeURIComponent(country)}&country_name=${encodeURIComponent(countryName)}&service=${encodeURIComponent(service)}`
       );
 
       const inventory = result.inventory;
