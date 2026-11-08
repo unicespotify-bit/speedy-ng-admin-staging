@@ -1885,6 +1885,11 @@ return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}
             </select>
           </div>
         </div>
+
+        <details style="margin-top:16px;">
+          <summary>YoungPG country response (diagnostic)</summary>
+          <pre style="white-space:pre-wrap;overflow-wrap:anywhere;">${escapeHtml(JSON.stringify(countryResult.countries, null, 2))}</pre>
+        </details>
       `;
 
       const filterCatalogueSelect = (searchId, selectId) => {
