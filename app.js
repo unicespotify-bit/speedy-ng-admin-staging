@@ -1856,11 +1856,9 @@ async function prepareLiveCatalogue() {
   ? item
   : item.country_name || item.countryName || item.country || item.name || item.eng || item.code || item.id;
 
-const countryId = typeof item === "object"
-  ? item.country_id ?? item.id ?? item.country_code ?? item.code ?? countryName
-  : item;
-
-const value = String(countryId || "").trim();
+const value = String(countryName || "")
+  .trim()
+  .toLowerCase();
 
 return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}</option>`;
 }).join("")}
