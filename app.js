@@ -1911,10 +1911,24 @@ const diagnosticSample = value => {
             : typeof serviceResult.services
         }, null, 2);
     try {
-      const [countryResult, serviceResult] = await Promise.all([
+      const catalogueRequest = Promise.all([
         api("/api/admin/catalogue/visual-numbers/countries"),
         api("/api/admin/catalogue/visual-numbers/services")
       ]);
+
+      let catalogueTimer;
+
+      const [countryResult, serviceResult] = await Promise.race([
+        catalogueRequest,
+        new Promise((_, reject) => {
+          catalogueTimer = setTimeout(
+            () => reject(new Error(
+              "The staging API did not finish loading YoungPG options within 20 seconds. Check the staging Worker deployment and logs."
+            )),
+            20000
+          );
+        })
+      ]).finally(() => clearTimeout(catalogueTimer));
 
       const countries = catalogueArray(countryResult.countries);
       const services = catalogueArray(serviceResult.services);
@@ -1959,8 +1973,17 @@ const diagnosticSample = value => {
       $("liveCatalogueService").innerHTML =
         `<option value="">Services unavailable</option>`;
 
-      $("liveCatalogueOptionsStatus").textContent =
-        `The fields are ready, but YoungPG options could not load: ${error.message}`;
+  $("liveCatalogueOptionsStatus").textContent =
+        `YoungPG options failed to load: ${error.message}`;
+
+      const diagnostic = $("liveCatalogueDiagnostic");
+      if (diagnostic) {
+        diagnostic.textContent = JSON.stringify({
+          stage: "Loading countries and services",
+          error: error.message,
+          nextCheck: "Check the staging API Worker request and its logs."
+        }, null, 2);
+      }
     }
 
     return;
