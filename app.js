@@ -1946,7 +1946,9 @@ try {
               item.code ||
               item.id;
 
-          const value = String(name || "").trim().toLowerCase();
+          const value = typeof item === "string"
+  ? item
+  : String(item.id || item.code || "").trim();
 
           return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}</option>`;
         }).join("");
