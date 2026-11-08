@@ -1889,7 +1889,27 @@ async function prepareLiveCatalogue() {
       "liveCatalogueServiceSearch",
       "liveCatalogueService"
     );
-const diagnosticSample = value => {
+try {
+      const catalogueRequest = Promise.all([
+        api("/api/admin/catalogue/visual-numbers/countries"),
+        api("/api/admin/catalogue/visual-numbers/services")
+      ]);
+
+      let catalogueTimer;
+
+      const [countryResult, serviceResult] = await Promise.race([
+        catalogueRequest,
+        new Promise((_, reject) => {
+          catalogueTimer = setTimeout(
+            () => reject(new Error(
+              "The staging API did not finish loading YoungPG options within 20 seconds. Check the staging Worker deployment and logs."
+            )),
+            20000
+          );
+        })
+      ]).finally(() => clearTimeout(catalogueTimer));
+
+      const diagnosticSample = value => {
         if (Array.isArray(value)) return value.slice(0, 5);
         if (value && typeof value === "object") {
           return Object.fromEntries(
@@ -1910,27 +1930,6 @@ const diagnosticSample = value => {
             ? "array"
             : typeof serviceResult.services
         }, null, 2);
-    try {
-      const catalogueRequest = Promise.all([
-        api("/api/admin/catalogue/visual-numbers/countries"),
-        api("/api/admin/catalogue/visual-numbers/services")
-      ]);
-
-      let catalogueTimer;
-
-      const [countryResult, serviceResult] = await Promise.race([
-        catalogueRequest,
-        new Promise((_, reject) => {
-          catalogueTimer = setTimeout(
-            () => reject(new Error(
-              "The staging API did not finish loading YoungPG options within 20 seconds. Check the staging Worker deployment and logs."
-            )),
-            20000
-          );
-        })
-      ]).finally(() => clearTimeout(catalogueTimer));
-
-      const countries = catalogueArray(countryResult.countries);
       const services = catalogueArray(serviceResult.services);
 
       $("liveCatalogueCountry").innerHTML =
