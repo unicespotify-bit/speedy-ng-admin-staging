@@ -1853,6 +1853,17 @@ async function prepareLiveCatalogue() {
       <p id="liveCatalogueOptionsStatus" class="muted">
         Loading YoungPG options...
       </p>
+
+      <details style="margin-top:16px;">
+        <summary style="cursor:pointer;color:#8ebcff;">
+          YoungPG response diagnostics
+        </summary>
+        <pre id="liveCatalogueDiagnostic"
+          style="white-space:pre-wrap;overflow-wrap:anywhere;
+          max-height:350px;overflow:auto;padding:12px;
+          background:#081a30;border-radius:8px;
+          font-size:12px;">Waiting for YoungPG response...</pre>
+      </details>
     `;
 
     const filterCatalogueSelect = (searchId, selectId) => {
@@ -1878,7 +1889,27 @@ async function prepareLiveCatalogue() {
       "liveCatalogueServiceSearch",
       "liveCatalogueService"
     );
+const diagnosticSample = value => {
+        if (Array.isArray(value)) return value.slice(0, 5);
+        if (value && typeof value === "object") {
+          return Object.fromEntries(
+            Object.entries(value).slice(0, 5)
+          );
+        }
+        return value;
+      };
 
+      $("liveCatalogueDiagnostic").textContent =
+        JSON.stringify({
+          countryResponseSample: diagnosticSample(countryResult.countries),
+          serviceResponseSample: diagnosticSample(serviceResult.services),
+          countryResponseType: Array.isArray(countryResult.countries)
+            ? "array"
+            : typeof countryResult.countries,
+          serviceResponseType: Array.isArray(serviceResult.services)
+            ? "array"
+            : typeof serviceResult.services
+        }, null, 2);
     try {
       const [countryResult, serviceResult] = await Promise.all([
         api("/api/admin/catalogue/visual-numbers/countries"),
