@@ -1940,7 +1940,7 @@ try {
             : typeof serviceResult.services
         }, null, 2);
       const countries = catalogueArray(countryResult.countries);
-
+      const services = catalogueArray(serviceResult.services);
       // Populate the pricing-rule country selector.
       const pricingCountry = $("ruleCountry");
       const pricingCountrySearch = $("ruleCountrySearch");
