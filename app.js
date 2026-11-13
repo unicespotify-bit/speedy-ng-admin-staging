@@ -1588,9 +1588,18 @@ async function testProviderConnection(product, button) {
 </div>
 
           <div class="field">
-            <label for="ruleService">Service</label>
-            <input id="ruleService" value="*"
-              placeholder="* or service">
+            <label for="ruleServiceSearch">Search service</label>
+            <input id="ruleServiceSearch" type="search"
+              placeholder="Type a service name...">
+
+            <label for="ruleService">Select service</label>
+            <select id="ruleService">
+              <option value="*">All services (*)</option>
+            </select>
+
+            <small class="muted" id="ruleServiceStatus">
+              Services will load from the selected provider catalogue.
+            </small>
           </div>
 
           <div class="field">
