@@ -2090,6 +2090,7 @@ function renderPricingTable() {
           <th>Markup type</th>
           <th>Markup value</th>
           <th>Active</th>
+<th>Actions</th>
         </tr>
       </thead>
       <tbody>
