@@ -1941,6 +1941,32 @@ try {
         }, null, 2);
       const countries = catalogueArray(countryResult.countries);
       const services = catalogueArray(serviceResult.services);
+  // Populate searchable Visual Numbers pricing services.
+      const pricingService = $("ruleService");
+
+      if (pricingService) {
+        let serviceSuggestions = $("ruleServiceSuggestions");
+
+        if (!serviceSuggestions) {
+          serviceSuggestions = document.createElement("datalist");
+          serviceSuggestions.id = "ruleServiceSuggestions";
+          pricingService.insertAdjacentElement("afterend", serviceSuggestions);
+        }
+
+        serviceSuggestions.innerHTML =
+          `<option value="*">All services</option>` +
+          services.map(item => {
+            const serviceId = typeof item === "string"
+              ? item
+              : String(item.code || item.id || item.service || "").trim();
+
+            return serviceId
+              ? `<option value="${escapeHtml(serviceId)}">${escapeHtml(catalogueLabel(item))}</option>`
+              : "";
+          }).join("");
+
+        pricingService.setAttribute("list", "ruleServiceSuggestions");
+      }
       // Populate the pricing-rule country selector.
       const pricingCountry = $("ruleCountry");
       const pricingCountrySearch = $("ruleCountrySearch");
