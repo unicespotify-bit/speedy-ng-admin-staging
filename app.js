@@ -2440,7 +2440,31 @@ $("saveGlobalBoost").onclick = () =>
         "input",
         renderPricingTable
       );
+$("pricingTable").onclick = async event => {
+        const button = event.target.closest("[data-delete-pricing-rule]");
+        if (!button) return;
 
+        const ruleId = button.dataset.deletePricingRule;
+
+        if (!confirm("Are you sure you want to remove this pricing rule?")) {
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Removing...";
+
+        try {
+          await api(`/api/admin/pricing/rules/${encodeURIComponent(ruleId)}`, {
+            method: "DELETE"
+          });
+
+          toast("Pricing rule removed successfully.");
+          await loadPricing();
+        } catch (error) {
+          toast("Could not remove pricing rule: " + error.message, true);
+          await loadPricing();
+        }
+      };
       $("pricingProductFilter").addEventListener(
         "change",
         renderPricingTable
