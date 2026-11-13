@@ -189,3 +189,72 @@ footer { display: flex; justify-content: center; gap: 9px; padding: 18px 25px 24
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+/* CUSTOMER SUPPORT INBOX */
+
+.support-inbox-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  gap: 16px;
+}
+
+.support-conversation-list {
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.support-conversation-item {
+  width: 100%;
+  font: inherit;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.support-conversation-item:hover,
+.support-conversation-item.active {
+  border-color: #3985ff !important;
+}
+
+.support-message-list {
+  scrollbar-width: thin;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid #29496f;
+  border-radius: 9px;
+  background: #142d4d;
+  color: #edf4ff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #2168c4;
+  border-color: #3985ff;
+  color: #ffffff;
+}
+
+.btn:hover {
+  filter: brightness(1.15);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+@media (max-width: 760px) {
+  .support-inbox-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .support-conversation-list {
+    max-height: 300px;
+  }
+
+  .support-message-list {
+    max-height: 350px !important;
+  }
+
