@@ -2220,6 +2220,7 @@ try {
         `<div class="empty-state">Social Logs catalogue could not load: ${escapeHtml(error.message)}</div>`;
     }
   }
+}
 async function loadPricing() {
   const holder = $("pricingTable");
   if (!holder) return;
