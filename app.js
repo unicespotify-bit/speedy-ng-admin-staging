@@ -1940,7 +1940,9 @@ try {
             : typeof serviceResult.services
         }, null, 2);
       const countries = catalogueArray(countryResult.countries);
-  const pricingCountry = $("ruleCountry");
+
+      // Populate the pricing-rule country selector.
+      const pricingCountry = $("ruleCountry");
       const pricingCountrySearch = $("ruleCountrySearch");
       const pricingCountryStatus = $("ruleCountryStatus");
 
@@ -1950,63 +1952,43 @@ try {
           countries.map(item => {
             const code = typeof item === "string"
               ? item
-              : String(
-                  item.country_code ||
-                  item.countryCode ||
-                  item.code ||
-                  item.id ||
-                  item.country_id ||
-                  ""
-                ).trim();
+              : String(item.id || item.code || "").trim();
 
-            const name = catalogueLabel(item);
-
-            return `<option value="${escapeHtml(code)}">${escapeHtml(name)} (${escapeHtml(code)})</option>`;
+            return `<option value="${escapeHtml(code)}">${escapeHtml(catalogueLabel(item))} (${escapeHtml(code)})</option>`;
           }).join("");
-
-        if (pricingCountryStatus) {
-          pricingCountryStatus.textContent =
-            `Loaded ${countries.length} countries. Search and select one.`;
-        }
       }
 
       if (pricingCountrySearch && pricingCountry) {
         pricingCountrySearch.oninput = () => {
-          const query = pricingCountrySearch.value
-            .toLowerCase()
-            .trim();
+          const query = pricingCountrySearch.value.toLowerCase().trim();
 
           pricingCountry.value = "*";
 
           Array.from(pricingCountry.options).forEach((option, index) => {
             if (index === 0) return;
-
-            option.hidden = !option.textContent
-              .toLowerCase()
-              .includes(query);
+            option.hidden = !option.textContent.toLowerCase().includes(query);
           });
 
           if (pricingCountryStatus) {
             pricingCountryStatus.textContent = query
-              ? "Choose the correct country from the filtered dropdown."
+              ? "Choose the correct country from the dropdown."
               : `Loaded ${countries.length} countries.`;
           }
         };
       }
-        countries.map(item => {
-          const name = typeof item === "string"
-            ? item
-            : item.country_name ||
-              item.countryName ||
-              item.country ||
-              item.name ||
-              item.eng ||
-              item.code ||
-              item.id;
 
+      if (pricingCountryStatus) {
+        pricingCountryStatus.textContent =
+          `Loaded ${countries.length} countries. Search and select one.`;
+      }
+
+      // Restore the Visual Numbers catalogue country selector.
+      $("liveCatalogueCountry").innerHTML =
+        `<option value="">Select country</option>` +
+        countries.map(item => {
           const value = typeof item === "string"
-  ? item
-  : String(item.id || item.code || "").trim();
+            ? item
+            : String(item.id || item.code || "").trim();
 
           return `<option value="${escapeHtml(value)}">${escapeHtml(catalogueLabel(item))}</option>`;
         }).join("");
