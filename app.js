@@ -15,7 +15,15 @@
     customers: [],
     orders: [],
     deposits: [],
-    announcements: [],
+      announcements: [],
+
+    // Customer support inbox
+    supportConversations: [],
+    supportUnreadCount: 0,
+    selectedSupportCustomerId: "",
+    selectedSupportCustomer: null,
+    supportMessages: [],
+
     editingAnnouncementId: null,
     pricing: [],
     providers: null,
@@ -508,6 +516,254 @@ const loaders = {
     }
   }
 
+    // ANNOUNCEMENTS AND CUSTOMER SUPPORT INBOX
+
+  async function loadAnnouncements() {
+    try {
+      const result = await api("/api/admin/announcements");
+      state.announcements = result.announcements || [];
+    } catch (error) {
+      toast("Could not load announcements: " + error.message, true);
+      state.announcements = [];
+    }
+
+    await loadSupportInboxData();
+    renderPage("support");
+    renderSupportConversationList();
+    renderSupportThread();
+  }
+
+  async function loadSupportInboxData() {
+    try {
+      const results = await Promise.all([
+        api("/api/admin/support/conversations"),
+        api("/api/admin/support/unread")
+      ]);
+
+      state.supportConversations = results[0].conversations || [];
+      state.supportUnreadCount = Number(results[1].unread_count || 0);
+
+    } catch (error) {
+      state.supportConversations = [];
+      state.supportUnreadCount = 0;
+      toast("Could not load support inbox: " + error.message, true);
+    }
+  }
+
+  async function loadSupportConversation(customerId, markSelected = true) {
+    if (!customerId) return;
+
+    if (markSelected) {
+      state.selectedSupportCustomerId = String(customerId);
+    }
+
+    const holder = $("supportThread");
+
+    if (holder) {
+      holder.innerHTML =
+        `<div class="empty-state">Loading conversation…</div>`;
+    }
+
+    try {
+      const result = await api(
+        "/api/admin/support/conversations/" +
+        encodeURIComponent(customerId)
+      );
+
+      state.selectedSupportCustomer = result.customer || { id: customerId };
+      state.supportMessages = result.messages || [];
+
+      renderSupportThread();
+
+      await loadSupportInboxData();
+      renderSupportConversationList();
+
+    } catch (error) {
+      if (holder) {
+        holder.innerHTML =
+          `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+      }
+
+      toast("Could not open conversation: " + error.message, true);
+    }
+  }
+
+  function renderSupportConversationList() {
+    const holder = $("supportConversationList");
+    if (!holder) return;
+
+    const conversations = state.supportConversations || [];
+
+    if (!conversations.length) {
+      holder.innerHTML =
+        `<div class="empty-state">No customer conversations yet.</div>`;
+      return;
+    }
+
+    holder.innerHTML = conversations.map(item => {
+      const customerId = String(item.customer_id || "");
+      const selected = customerId === state.selectedSupportCustomerId;
+      const unread = Number(item.unread_count || 0);
+
+      return `
+        <button
+          type="button"
+          class="support-conversation-item ${selected ? "active" : ""}"
+          data-support-customer="${escapeHtml(customerId)}"
+          style="
+            display:block;
+            width:100%;
+            text-align:left;
+            padding:14px;
+            margin-bottom:8px;
+            border:1px solid #263e61;
+            border-radius:10px;
+            background:${selected ? "#142d50" : "#0c1a35"};
+            color:#fff;
+            cursor:pointer;
+          "
+        >
+          <div style="display:flex;justify-content:space-between;gap:10px;">
+            <strong>${escapeHtml(item.email || "Customer")}</strong>
+
+            ${
+              unread
+                ? `<span style="background:#3985ff;color:#fff;border-radius:20px;padding:3px 8px;font-size:11px;">${number(unread)} new</span>`
+                : ""
+            }
+          </div>
+
+          <p style="margin:8px 0 5px;color:#b8c8df;overflow-wrap:anywhere;">
+            ${escapeHtml(item.last_message || "No message")}
+          </p>
+
+          <small style="color:#8299b8;">
+            ${escapeHtml(formatDate(item.last_message_at))}
+          </small>
+        </button>
+      `;
+    }).join("");
+  }
+
+  function renderSupportThread() {
+    const holder = $("supportThread");
+    if (!holder) return;
+
+    const customer = state.selectedSupportCustomer;
+    const messages = state.supportMessages || [];
+
+    if (!customer) {
+      holder.innerHTML =
+        `<div class="empty-state">Select a customer conversation to view messages.</div>`;
+      return;
+    }
+
+    holder.innerHTML = `
+      <div style="padding-bottom:12px;border-bottom:1px solid #263e61;margin-bottom:14px;">
+        <strong>${escapeHtml(customer.email || "Customer")}</strong>
+        <p class="muted">Customer support conversation</p>
+      </div>
+
+      <div class="support-message-list"
+        style="display:flex;flex-direction:column;gap:12px;max-height:420px;overflow-y:auto;padding:5px 2px 15px;">
+        ${
+          messages.length
+            ? messages.map(message => {
+                const isAdmin =
+                  String(message.sender_type || "").toLowerCase() === "admin";
+
+                return `
+                  <div style="
+                    align-self:${isAdmin ? "flex-end" : "flex-start"};
+                    max-width:85%;
+                    padding:12px;
+                    border-radius:12px;
+                    background:${isAdmin ? "#173e70" : "#14243d"};
+                    border:1px solid #29496f;
+                    overflow-wrap:anywhere;
+                  ">
+                    <small style="color:#9fc5f5;">
+                      ${isAdmin ? "You (Admin)" : "Customer"}
+                    </small>
+
+                    <p style="margin:7px 0;color:#fff;white-space:pre-wrap;">${escapeHtml(message.message || "")}</p>
+
+                    <small style="color:#9aacc4;">
+                      ${escapeHtml(formatDate(message.created_at))}
+                    </small>
+                  </div>
+                `;
+              }).join("")
+            : `<div class="empty-state">No messages in this conversation yet.</div>`
+        }
+      </div>
+
+      <div style="border-top:1px solid #263e61;padding-top:15px;margin-top:10px;">
+        <label for="supportReplyMessage">Reply to customer</label>
+
+        <textarea
+          id="supportReplyMessage"
+          rows="4"
+          maxlength="5000"
+          placeholder="Write your reply here..."
+          style="width:100%;margin:8px 0;"
+        ></textarea>
+
+        <button type="button" class="btn btn-primary" id="sendSupportReplyBtn">
+          Send reply
+        </button>
+      </div>
+    `;
+
+    const button = $("sendSupportReplyBtn");
+    if (button) button.onclick = sendSupportReply;
+  }
+
+  async function sendSupportReply() {
+    const customerId = state.selectedSupportCustomerId;
+    const input = $("supportReplyMessage");
+
+    if (!customerId || !input) {
+      toast("Select a customer conversation first.", true);
+      return;
+    }
+
+    const message = input.value.trim();
+
+    if (!message) {
+      toast("Write a message before sending.", true);
+      return;
+    }
+
+    const button = $("sendSupportReplyBtn");
+    button.disabled = true;
+    button.textContent = "Sending…";
+
+    try {
+      await api(
+        "/api/admin/support/conversations/" +
+        encodeURIComponent(customerId),
+        {
+          method: "POST",
+          body: JSON.stringify({ message })
+        }
+      );
+
+      toast("Your reply has been sent.");
+      await loadSupportConversation(customerId, false);
+
+    } catch (error) {
+      toast("Reply could not be sent: " + error.message, true);
+    } finally {
+      const currentButton = $("sendSupportReplyBtn");
+
+      if (currentButton) {
+        currentButton.disabled = false;
+        currentButton.textContent = "Send reply";
+      }
+    }
+  }
+
   function renderSupport() {
     const announcements = state.announcements || [];
 
@@ -515,21 +771,58 @@ const loaders = {
       <div class="panel">
         <div class="panel-head">
           <div>
-            <h3>Announcements & Support</h3>
+            <h3>Customer Support Inbox</h3>
             <p class="muted">
-              Create and manage announcements for customers.
+              Read customer messages and reply from your admin dashboard.
             </p>
+          </div>
+
+          <div>
+            <strong style="color:#55e6ff;">
+              ${number(state.supportUnreadCount)}
+            </strong>
+            <small class="muted">Unread messages</small>
+          </div>
+        </div>
+
+        <div class="support-inbox-grid">
+          <div>
+            <div class="panel-head">
+              <h3>Customer conversations</h3>
+              <button type="button" class="btn" id="refreshSupportInboxBtn">
+                Refresh inbox
+              </button>
+            </div>
+
+            <div id="supportConversationList" class="support-conversation-list">
+              <div class="empty-state">Loading conversations…</div>
+            </div>
+          </div>
+
+          <div class="panel" style="min-width:0;">
+            <h3>Conversation</h3>
+            <div id="supportThread">
+              <div class="empty-state">
+                Select a customer conversation to view messages.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Publish an announcement</h3>
+            <p class="muted">Create an announcement that customers can see.</p>
           </div>
         </div>
 
         <div class="form-grid">
           <div class="form-group">
             <label for="announcementTitle">Announcement title</label>
-            <input
-              id="announcementTitle"
-              maxlength="120"
-              placeholder="Enter announcement title"
-            >
+            <input id="announcementTitle" maxlength="120"
+              placeholder="Enter announcement title">
           </div>
 
           <div class="form-group">
@@ -544,12 +837,8 @@ const loaders = {
 
           <div class="form-group">
             <label for="announcementMessage">Message</label>
-            <textarea
-              id="announcementMessage"
-              maxlength="5000"
-              rows="5"
-              placeholder="Write your announcement"
-            ></textarea>
+            <textarea id="announcementMessage" maxlength="5000"
+              rows="5" placeholder="Write your announcement"></textarea>
           </div>
         </div>
 
@@ -562,12 +851,11 @@ const loaders = {
         <div class="panel-head">
           <div>
             <h3>Existing announcements</h3>
-            <p class="muted">
-              ${announcements.length} announcement(s)
-            </p>
+            <p class="muted">${announcements.length} announcement(s)</p>
           </div>
+
           <button class="btn" id="reloadAnnouncementsBtn">
-            Refresh
+            Refresh announcements
           </button>
         </div>
 
@@ -580,6 +868,7 @@ const loaders = {
                   <p>${escapeHtml(item.message)}</p>
                   <small>${escapeHtml(item.type)} · ${formatDate(item.created_at)}</small>
                 </div>
+
                 ${statusBadge(
                   Number(item.is_active) === 1 ? "Active" : "Inactive"
                 )}
