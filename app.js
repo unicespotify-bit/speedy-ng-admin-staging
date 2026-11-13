@@ -1976,6 +1976,8 @@ try {
             .toLowerCase()
             .trim();
 
+          pricingCountry.value = "*";
+
           Array.from(pricingCountry.options).forEach((option, index) => {
             if (index === 0) return;
 
@@ -1984,23 +1986,13 @@ try {
               .includes(query);
           });
 
-          if (query) {
-            const match = Array.from(pricingCountry.options).find(
-              (option, index) =>
-                index > 0 &&
-                option.textContent.toLowerCase().includes(query)
-            );
-
-            pricingCountry.value = match ? match.value : "*";
-          } else {
-            pricingCountry.value = "*";
+          if (pricingCountryStatus) {
+            pricingCountryStatus.textContent = query
+              ? "Choose the correct country from the filtered dropdown."
+              : `Loaded ${countries.length} countries.`;
           }
         };
       }
-      const services = catalogueArray(serviceResult.services);
-
-      $("liveCatalogueCountry").innerHTML =
-        `<option value="">Select country</option>` +
         countries.map(item => {
           const name = typeof item === "string"
             ? item
