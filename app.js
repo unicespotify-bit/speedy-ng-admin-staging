@@ -1939,7 +1939,64 @@ try {
             ? "array"
             : typeof serviceResult.services
         }, null, 2);
-  
+      const countries = catalogueArray(countryResult.countries);
+  const pricingCountry = $("ruleCountry");
+      const pricingCountrySearch = $("ruleCountrySearch");
+      const pricingCountryStatus = $("ruleCountryStatus");
+
+      if (pricingCountry) {
+        pricingCountry.innerHTML =
+          `<option value="*">All countries (*)</option>` +
+          countries.map(item => {
+            const code = typeof item === "string"
+              ? item
+              : String(
+                  item.country_code ||
+                  item.countryCode ||
+                  item.code ||
+                  item.id ||
+                  item.country_id ||
+                  ""
+                ).trim();
+
+            const name = catalogueLabel(item);
+
+            return `<option value="${escapeHtml(code)}">${escapeHtml(name)} (${escapeHtml(code)})</option>`;
+          }).join("");
+
+        if (pricingCountryStatus) {
+          pricingCountryStatus.textContent =
+            `Loaded ${countries.length} countries. Search and select one.`;
+        }
+      }
+
+      if (pricingCountrySearch && pricingCountry) {
+        pricingCountrySearch.oninput = () => {
+          const query = pricingCountrySearch.value
+            .toLowerCase()
+            .trim();
+
+          Array.from(pricingCountry.options).forEach((option, index) => {
+            if (index === 0) return;
+
+            option.hidden = !option.textContent
+              .toLowerCase()
+              .includes(query);
+          });
+
+          if (query) {
+            const match = Array.from(pricingCountry.options).find(
+              (option, index) =>
+                index > 0 &&
+                option.textContent.toLowerCase().includes(query)
+            );
+
+            pricingCountry.value = match ? match.value : "*";
+          } else {
+            pricingCountry.value = "*";
+          }
+        };
+      }
       const services = catalogueArray(serviceResult.services);
 
       $("liveCatalogueCountry").innerHTML =
