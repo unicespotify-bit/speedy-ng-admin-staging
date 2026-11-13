@@ -2103,6 +2103,7 @@ function renderPricingTable() {
             <td>${escapeHtml(rule.markup_type)}</td>
             <td>${escapeHtml(rule.markup_value)}</td>
             <td>${rule.active ? statusBadge("Active") : statusBadge("Inactive")}</td>
+<td><button type="button" data-delete-pricing-rule="${escapeHtml(rule.id)}">Remove</button></td>
           </tr>
         `).join("")}
       </tbody>
