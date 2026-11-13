@@ -3084,7 +3084,97 @@ $("pricingTable").onclick = async event => {
           );
         };
       }
-      $("reloadAnnouncementsBtn").onclick = loadAnnouncements;
+            $("reloadAnnouncementsBtn").onclick = loadAnnouncements;
+
+      const announcementList = $("announcementList");
+
+      if (announcementList) {
+        announcementList.onclick = async event => {
+          const toggleButton = event.target.closest(
+            "[data-announcement-toggle]"
+          );
+
+          const deleteButton = event.target.closest(
+            "[data-announcement-delete]"
+          );
+
+          if (!toggleButton && !deleteButton) return;
+
+          if (toggleButton) {
+            const announcementId =
+              toggleButton.dataset.announcementToggle;
+
+            const nextActive =
+              Number(toggleButton.dataset.nextActive);
+
+            toggleButton.disabled = true;
+
+            try {
+              await api(
+                `/api/admin/announcements/${encodeURIComponent(announcementId)}`,
+                {
+                  method: "PATCH",
+                  body: JSON.stringify({
+                    is_active: nextActive
+                  })
+                }
+              );
+
+              toast(
+                nextActive === 1
+                  ? "Announcement activated successfully."
+                  : "Announcement deactivated successfully."
+              );
+
+              await loadAnnouncements();
+            } catch (error) {
+              toast(
+                "Could not update announcement: " + error.message,
+                true
+              );
+
+              await loadAnnouncements();
+            }
+
+            return;
+          }
+
+          if (deleteButton) {
+            const announcementId =
+              deleteButton.dataset.announcementDelete;
+
+            if (
+              !confirm(
+                "Permanently delete this announcement? This action cannot be undone."
+              )
+            ) {
+              return;
+            }
+
+            deleteButton.disabled = true;
+
+            try {
+              await api(
+                `/api/admin/announcements/${encodeURIComponent(announcementId)}`,
+                {
+                  method: "DELETE"
+                }
+              );
+
+              toast("Announcement permanently deleted.");
+
+              await loadAnnouncements();
+            } catch (error) {
+              toast(
+                "Could not delete announcement: " + error.message,
+                true
+              );
+
+              await loadAnnouncements();
+            }
+          }
+        };
+      }
     }
   }
 
