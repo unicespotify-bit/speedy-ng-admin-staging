@@ -755,119 +755,139 @@ const loaders = {
   }
 
   function renderSupport() {
-    const announcements = state.announcements || [];
+  const announcements = state.announcements || [];
 
-    return `
-      <div class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Customer Support Inbox</h3>
-            <p class="muted">
-              Read customer messages and reply from your admin dashboard.
-            </p>
+  return `
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Customer Support Inbox</h3>
+          <p class="muted">
+            Read customer messages and reply from your admin dashboard.
+          </p>
+        </div>
+
+        <div>
+          <strong style="color:#55e6ff;">
+            ${number(state.supportUnreadCount)}
+          </strong>
+          <small class="muted">Unread messages</small>
+        </div>
+      </div>
+
+      <div class="support-inbox-grid">
+        <div>
+          <div class="panel-head">
+            <h3>Customer conversations</h3>
+            <button type="button" class="btn" id="refreshSupportInboxBtn">
+              Refresh inbox
+            </button>
           </div>
 
-          <div>
-            <strong style="color:#55e6ff;">
-              ${number(state.supportUnreadCount)}
-            </strong>
-            <small class="muted">Unread messages</small>
+          <div id="supportConversationList" class="support-conversation-list">
+            <div class="empty-state">Loading conversations…</div>
           </div>
         </div>
 
-        <div class="support-inbox-grid">
-          <div>
-            <div class="panel-head">
-              <h3>Customer conversations</h3>
-              <button type="button" class="btn" id="refreshSupportInboxBtn">
-                Refresh inbox
-              </button>
-            </div>
-
-            <div id="supportConversationList" class="support-conversation-list">
-              <div class="empty-state">Loading conversations…</div>
-            </div>
-          </div>
-
-          <div class="panel" style="min-width:0;">
-            <h3>Conversation</h3>
-            <div id="supportThread">
-              <div class="empty-state">
-                Select a customer conversation to view messages.
-              </div>
+        <div class="panel" style="min-width:0;">
+          <h3>Conversation</h3>
+          <div id="supportThread">
+            <div class="empty-state">
+              Select a customer conversation to view messages.
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Publish an announcement</h3>
-            <p class="muted">Create an announcement that customers can see.</p>
-          </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Publish an announcement</h3>
+          <p class="muted">Create an announcement that customers can see.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="announcementTitle">Announcement title</label>
+          <input id="announcementTitle" maxlength="120"
+            placeholder="Enter announcement title">
         </div>
 
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="announcementTitle">Announcement title</label>
-            <input id="announcementTitle" maxlength="120"
-              placeholder="Enter announcement title">
-          </div>
-
-          <div class="form-group">
-            <label for="announcementType">Announcement type</label>
-            <select id="announcementType">
-              <option value="info">Information</option>
-              <option value="success">Success</option>
-              <option value="warning">Warning</option>
-              <option value="important">Important</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="announcementMessage">Message</label>
-            <textarea id="announcementMessage" maxlength="5000"
-              rows="5" placeholder="Write your announcement"></textarea>
-          </div>
+        <div class="form-group">
+          <label for="announcementType">Announcement type</label>
+          <select id="announcementType">
+            <option value="info">Information</option>
+            <option value="success">Success</option>
+            <option value="warning">Warning</option>
+            <option value="important">Important</option>
+          </select>
         </div>
 
-        <button class="btn btn-primary" id="createAnnouncementBtn">
-          Publish announcement
+        <div class="form-group">
+          <label for="announcementMessage">Message</label>
+          <textarea id="announcementMessage" maxlength="5000"
+            rows="5" placeholder="Write your announcement"></textarea>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="createAnnouncementBtn">
+        Publish announcement
+      </button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Existing announcements</h3>
+          <p class="muted">${announcements.length} announcement(s)</p>
+        </div>
+
+        <button class="btn" id="reloadAnnouncementsBtn">
+          Refresh announcements
         </button>
       </div>
 
-      <div class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Existing announcements</h3>
-            <p class="muted">${announcements.length} announcement(s)</p>
-          </div>
-
-          <button class="btn" id="reloadAnnouncementsBtn">
-            Refresh announcements
-          </button>
-        </div>
-
+      <div id="announcementList">
         ${
           announcements.length
-            ? announcements.map(item => `
-              <div class="activity-item">
-                <div>
-                  <strong>${escapeHtml(item.title)}</strong>
-                  <p>${escapeHtml(item.message)}</p>
-                  <small>${escapeHtml(item.type)} · ${formatDate(item.created_at)}</small>
-                </div>
+            ? announcements.map(item => {
+                const active = Number(item.is_active) === 1;
 
-                ${statusBadge(
-                  Number(item.is_active) === 1 ? "Active" : "Inactive"
-                )}
-              </div>
-            `).join("")
+                return `
+                  <div class="activity-item">
+                    <div style="flex:1;min-width:0;">
+                      <strong>${escapeHtml(item.title)}</strong>
+                      <p>${escapeHtml(item.message)}</p>
+                      <small>${escapeHtml(item.type)} · ${formatDate(item.created_at)}</small>
+                      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button
+                          type="button"
+                          class="btn"
+                          data-announcement-toggle="${escapeHtml(String(item.id))}"
+                          data-next-active="${active ? "0" : "1"}">
+                          ${active ? "Deactivate" : "Activate"}
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn"
+                          data-announcement-delete="${escapeHtml(String(item.id))}">
+                          Delete permanently
+                        </button>
+                      </div>
+                    </div>
+
+                    ${statusBadge(active ? "Active" : "Inactive")}
+                  </div>
+                `;
+              }).join("")
             : `<div class="empty-state">No announcements have been created yet.</div>`
         }
       </div>
-    `;
+    </div>
+  `;
   }
 
   // OVERVIEW
