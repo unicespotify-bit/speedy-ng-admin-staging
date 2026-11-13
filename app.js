@@ -2187,21 +2187,43 @@ try {
           `Loaded ${countryMap.size} Social Logs countries from YoungPG listings.`;
       }
 
-      let serviceSuggestions = $("ruleServiceSuggestions");
+      const pricingService = $("ruleService");
+      const pricingServiceSearch = $("ruleServiceSearch");
+      const pricingServiceStatus = $("ruleServiceStatus");
 
-      if (!serviceSuggestions) {
-        serviceSuggestions = document.createElement("datalist");
-        serviceSuggestions.id = "ruleServiceSuggestions";
-        $("ruleService").insertAdjacentElement("afterend", serviceSuggestions);
+      if (pricingService) {
+        pricingService.innerHTML =
+          `<option value="*">All services (*)</option>` +
+          Array.from(serviceMap.entries()).map(([id, name]) =>
+            `<option value="${escapeHtml(id)}">${escapeHtml(name)} (${escapeHtml(id)})</option>`
+          ).join("");
+
+        if (pricingServiceSearch) {
+          pricingServiceSearch.oninput = () => {
+            const query = pricingServiceSearch.value.toLowerCase().trim();
+
+            pricingService.value = "*";
+
+            Array.from(pricingService.options).forEach((option, index) => {
+              if (index === 0) return;
+
+              option.hidden =
+                !option.textContent.toLowerCase().includes(query);
+            });
+
+            if (pricingServiceStatus) {
+              pricingServiceStatus.textContent = query
+                ? "Choose the matching service from the dropdown."
+                : `Loaded ${serviceMap.size} Social Logs services.`;
+            }
+          };
+        }
+
+        if (pricingServiceStatus) {
+          pricingServiceStatus.textContent =
+            `Loaded ${serviceMap.size} Social Logs services.`;
+        }
       }
-
-      serviceSuggestions.innerHTML =
-        `<option value="*">All services</option>` +
-        Array.from(serviceMap.entries()).map(([id, name]) =>
-          `<option value="${escapeHtml(id)}">${escapeHtml(name)} (${escapeHtml(id)})</option>`
-        ).join("");
-
-      $("ruleService").setAttribute("list", "ruleServiceSuggestions");
 
       controls.innerHTML = `
         <div class="field-grid">
