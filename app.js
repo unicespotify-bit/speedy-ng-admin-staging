@@ -1950,31 +1950,54 @@ try {
         }, null, 2);
       const countries = catalogueArray(countryResult.countries);
       const services = catalogueArray(serviceResult.services);
-  // Populate searchable Visual Numbers pricing services.
+  // Populate the Visual Numbers pricing service dropdown.
       const pricingService = $("ruleService");
+      const pricingServiceSearch = $("ruleServiceSearch");
+      const pricingServiceStatus = $("ruleServiceStatus");
 
       if (pricingService) {
-        let serviceSuggestions = $("ruleServiceSuggestions");
-
-        if (!serviceSuggestions) {
-          serviceSuggestions = document.createElement("datalist");
-          serviceSuggestions.id = "ruleServiceSuggestions";
-          pricingService.insertAdjacentElement("afterend", serviceSuggestions);
-        }
-
-        serviceSuggestions.innerHTML =
-          `<option value="*">All services</option>` +
+        pricingService.innerHTML =
+          `<option value="*">All services (*)</option>` +
           services.map(item => {
             const serviceId = typeof item === "string"
               ? item
-              : String(item.code || item.id || item.service || "").trim();
+              : String(
+                  item.code ||
+                  item.id ||
+                  item.service ||
+                  ""
+                ).trim();
 
             return serviceId
-              ? `<option value="${escapeHtml(serviceId)}">${escapeHtml(catalogueLabel(item))}</option>`
+              ? `<option value="${escapeHtml(serviceId)}">${escapeHtml(catalogueLabel(item))} (${escapeHtml(serviceId)})</option>`
               : "";
           }).join("");
 
-        pricingService.setAttribute("list", "ruleServiceSuggestions");
+        if (pricingServiceSearch) {
+          pricingServiceSearch.oninput = () => {
+            const query = pricingServiceSearch.value.toLowerCase().trim();
+
+            pricingService.value = "*";
+
+            Array.from(pricingService.options).forEach((option, index) => {
+              if (index === 0) return;
+
+              option.hidden =
+                !option.textContent.toLowerCase().includes(query);
+            });
+
+            if (pricingServiceStatus) {
+              pricingServiceStatus.textContent = query
+                ? "Choose the matching service from the dropdown."
+                : `Loaded ${services.length} Visual Numbers services.`;
+            }
+          };
+        }
+
+        if (pricingServiceStatus) {
+          pricingServiceStatus.textContent =
+            `Loaded ${services.length} Visual Numbers services.`;
+        }
       }
       // Populate the pricing-rule country selector.
       const pricingCountry = $("ruleCountry");
