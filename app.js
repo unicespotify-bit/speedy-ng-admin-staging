@@ -2033,14 +2033,108 @@ try {
 
   if (product === "social_logs") {
     controls.innerHTML =
-      `<div class="empty-state">Loading Social Logs categories...</div>`;
+      `<div class="empty-state">Loading Social Logs categories and listings...</div>`;
 
     try {
-      const result = await api(
-        "/api/admin/catalogue/social-logs/categories"
-      );
+      const [categoryResult, listingResult] = await Promise.all([
+        api("/api/admin/catalogue/social-logs/categories"),
+        api("/api/admin/catalogue/social-logs/listings?page=1&per_page=100")
+      ]);
 
-      const categories = catalogueArray(result.categories);
+      const categories = catalogueArray(categoryResult.categories);
+      const listings = catalogueArray(listingResult.listings);
+
+      const countryMap = new Map();
+      const serviceMap = new Map();
+
+      listings.forEach(item => {
+        const countryCode = String(
+          item.country_code || item.country || ""
+        ).trim();
+
+        const countryName = String(
+          item.country_name ||
+          item.countryName ||
+          item.country ||
+          countryCode
+        ).trim();
+
+        const serviceId = String(
+          item.service ||
+          item.category_slug ||
+          item.category ||
+          ""
+        ).trim();
+
+        const serviceName = String(
+          item.service_name ||
+          item.category_name ||
+          serviceId
+        ).trim();
+
+        if (countryCode) {
+          countryMap.set(countryCode, countryName);
+        }
+
+        if (serviceId) {
+          serviceMap.set(serviceId, serviceName);
+        }
+      });
+
+      const pricingCountry = $("ruleCountry");
+      const pricingCountrySearch = $("ruleCountrySearch");
+      const pricingCountryStatus = $("ruleCountryStatus");
+
+      if (pricingCountry) {
+        pricingCountry.innerHTML =
+          `<option value="*">All countries (*)</option>` +
+          Array.from(countryMap.entries()).map(([code, name]) =>
+            `<option value="${escapeHtml(code)}">${escapeHtml(name)} (${escapeHtml(code)})</option>`
+          ).join("");
+      }
+
+      if (pricingCountrySearch && pricingCountry) {
+        pricingCountrySearch.oninput = () => {
+          const query = pricingCountrySearch.value.toLowerCase().trim();
+
+          pricingCountry.value = "*";
+
+          Array.from(pricingCountry.options).forEach((option, index) => {
+            if (index === 0) return;
+
+            option.hidden =
+              !option.textContent.toLowerCase().includes(query);
+          });
+
+          if (pricingCountryStatus) {
+            pricingCountryStatus.textContent =
+              query
+                ? "Choose the correct country from the dropdown."
+                : `Loaded ${countryMap.size} Social Logs countries.`;
+          }
+        };
+      }
+
+      if (pricingCountryStatus) {
+        pricingCountryStatus.textContent =
+          `Loaded ${countryMap.size} Social Logs countries from YoungPG listings.`;
+      }
+
+      let serviceSuggestions = $("ruleServiceSuggestions");
+
+      if (!serviceSuggestions) {
+        serviceSuggestions = document.createElement("datalist");
+        serviceSuggestions.id = "ruleServiceSuggestions";
+        $("ruleService").insertAdjacentElement("afterend", serviceSuggestions);
+      }
+
+      serviceSuggestions.innerHTML =
+        `<option value="*">All services</option>` +
+        Array.from(serviceMap.entries()).map(([id, name]) =>
+          `<option value="${escapeHtml(id)}">${escapeHtml(name)} (${escapeHtml(id)})</option>`
+        ).join("");
+
+      $("ruleService").setAttribute("list", "ruleServiceSuggestions");
 
       controls.innerHTML = `
         <div class="field-grid">
@@ -2065,13 +2159,32 @@ try {
             >
           </div>
         </div>
+
+        <p class="muted">
+          Loaded ${listings.length} listings,
+          ${countryMap.size} countries and
+          ${serviceMap.size} service identifiers from YoungPG.
+        </p>
+
+        <details style="margin-top:16px;">
+          <summary style="cursor:pointer;color:#8ebcff;">
+            Social Logs catalogue diagnostics
+          </summary>
+          <pre style="white-space:pre-wrap;overflow-wrap:anywhere;
+            max-height:350px;overflow:auto;padding:12px;
+            background:#081a30;border-radius:8px;font-size:12px;">${escapeHtml(JSON.stringify({
+              listingSample: listings.slice(0, 5),
+              countries: Array.from(countryMap.entries()),
+              services: Array.from(serviceMap.entries())
+            }, null, 2))}</pre>
+        </details>
       `;
+
     } catch (error) {
       controls.innerHTML =
-        `<div class="empty-state">Social Logs categories could not load: ${escapeHtml(error.message)}</div>`;
+        `<div class="empty-state">Social Logs catalogue could not load: ${escapeHtml(error.message)}</div>`;
     }
   }
-}
 async function loadPricing() {
   const holder = $("pricingTable");
   if (!holder) return;
