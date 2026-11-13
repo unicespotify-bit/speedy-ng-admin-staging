@@ -506,16 +506,6 @@ const loaders = {
     `;
   }
 
-  async function loadAnnouncements() {
-    try {
-      const result = await api("/api/admin/announcements");
-      state.announcements = result.announcements || [];
-      renderPage("support");
-    } catch (error) {
-      toast(error.message, true);
-    }
-  }
-
     // ANNOUNCEMENTS AND CUSTOMER SUPPORT INBOX
 
   async function loadAnnouncements() {
@@ -3040,7 +3030,40 @@ $("pricingTable").onclick = async event => {
           button.disabled = false;
         }
       };
+         const refreshSupportInboxBtn = $("refreshSupportInboxBtn");
 
+      if (refreshSupportInboxBtn) {
+        refreshSupportInboxBtn.onclick = async () => {
+          await loadSupportInboxData();
+          renderSupportConversationList();
+
+          if (state.selectedSupportCustomerId) {
+            await loadSupportConversation(
+              state.selectedSupportCustomerId,
+              false
+            );
+          } else {
+            renderSupportThread();
+          }
+        };
+      }
+
+      const conversationList = $("supportConversationList");
+
+      if (conversationList) {
+        conversationList.onclick = event => {
+          const button = event.target.closest(
+            "[data-support-customer]"
+          );
+
+          if (!button) return;
+
+          loadSupportConversation(
+            button.dataset.supportCustomer,
+            true
+          );
+        };
+      }
       $("reloadAnnouncementsBtn").onclick = loadAnnouncements;
     }
   }
