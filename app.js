@@ -1959,22 +1959,31 @@ try {
       }
 
       if (pricingCountrySearch && pricingCountry) {
-        pricingCountrySearch.oninput = () => {
-          const query = pricingCountrySearch.value.toLowerCase().trim();
+  pricingCountrySearch.oninput = () => {
+    const query = pricingCountrySearch.value.toLowerCase().trim();
+    let matches = 0;
 
-          pricingCountry.value = "*";
+    pricingCountry.value = "*";
 
-          Array.from(pricingCountry.options).forEach((option, index) => {
-            if (index === 0) return;
-            option.hidden = !option.textContent.toLowerCase().includes(query);
-          });
+    Array.from(pricingCountry.options).forEach((option, index) => {
+      if (index === 0) return;
 
-          if (pricingCountryStatus) {
-            pricingCountryStatus.textContent = query
-              ? "Choose the correct country from the dropdown."
-              : `Loaded ${countries.length} countries.`;
-          }
-        };
+      const matchesSearch =
+        !query || option.textContent.toLowerCase().includes(query);
+
+      option.hidden = !matchesSearch;
+
+      if (matchesSearch) matches++;
+    });
+
+    if (pricingCountryStatus) {
+      pricingCountryStatus.textContent = query
+        ? matches
+          ? `${matches} matching country/countries found. Select your country below.`
+          : "No matching country found. Try another spelling."
+        : `Loaded ${countries.length} countries.`;
+    }
+  };
       }
 
       if (pricingCountryStatus) {
