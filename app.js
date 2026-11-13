@@ -1576,10 +1576,16 @@ async function testProviderConnection(product, button) {
           </div>
 
           <div class="field">
-            <label for="ruleCountry">Country</label>
-            <input id="ruleCountry" value="*"
-              placeholder="* or country">
-          </div>
+  <label for="ruleCountry">Search and select country</label>
+  <input id="ruleCountrySearch" type="search"
+    placeholder="Type a country name, e.g. CAN">
+  <select id="ruleCountry">
+    <option value="*">All countries (*)</option>
+  </select>
+  <small class="muted" id="ruleCountryStatus">
+    Country options will load from the provider catalogue.
+  </small>
+</div>
 
           <div class="field">
             <label for="ruleService">Service</label>
