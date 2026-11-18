@@ -2108,6 +2108,40 @@ async function loadLiveCatalogue() {
     `<div class="empty-state">Loading the latest catalogue…</div>`;
 
   try {
+    if (product === "nexa_visual_numbers") {
+      const driver = $("nexaCatalogueDriver")?.value || "prime";
+      const country = $("nexaCatalogueCountry")?.value || "";
+      const service = $("nexaCatalogueService")?.value || "";
+
+      if (!country || !service) {
+        holder.innerHTML =
+          `<div class="empty-state">Select a country and service first.</div>`;
+        return;
+      }
+
+      const result = await api(
+        "/api/admin/catalogue/nexa-visual-numbers/price",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            driver,
+            country,
+            service
+          })
+        }
+      );
+
+      holder.innerHTML = `
+        <div class="callout">
+          <strong>Nexa ${escapeHtml(driver.toUpperCase())} — Live Price</strong>
+          <p>Country: ${escapeHtml(country)}</p>
+          <p>Service: ${escapeHtml(service)}</p>
+          <pre style="white-space:pre-wrap;overflow-wrap:anywhere;">${escapeHtml(JSON.stringify(result.price ?? result, null, 2))}</pre>
+        </div>
+      `;
+
+      return;
+    }
     if (product === "visual_numbers") {
       const countrySelect = $("liveCatalogueCountry");
       const country = countrySelect?.value || "";
