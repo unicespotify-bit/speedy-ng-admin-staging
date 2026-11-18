@@ -1672,8 +1672,8 @@ function renderNexarInbox() {
 
       <div class="callout">
         YoungPG handles Visual Numbers and Social Logs.
-        Nexa handles Official Numbers and Social Boosting.
-        Nexa is not used for Social Logs.
+        Nexa handles Visual Numbers through its Prime and Alternate options.
+        Nexa is not used for Social Logs or Social Boosting.
       </div>
 
       <div id="providerStatusPanel">
@@ -1688,7 +1688,7 @@ function renderNexarInbox() {
     const description = {
       visual: "YoungPG — Visual Numbers",
       "social-logs": "YoungPG — Social Logs",
-      boosting: "Nexa — Social Boosting"
+      boosting: "Nexa — Visual Numbers"
     }[page];
 
     return `
@@ -1721,8 +1721,7 @@ function renderNexarInbox() {
       const rows = [
         ["YoungPG — Visual Numbers", young.visualNumbers],
         ["YoungPG — Social Logs", young.socialLogs],
-        ["Nexa — Official Numbers", nexa.officialNumbers],
-        ["Nexa — Social Boosting", nexa.socialBoosting]
+        ["Nexa — Visual Numbers", nexa.officialNumbers]
       ];
 
       holder.innerHTML = panel(
@@ -1759,23 +1758,19 @@ function renderNexarInbox() {
                       <td>${escapeHtml(details)}</td>
                       <td>
   ${label.includes("YoungPG — Visual Numbers") ||
-  label.includes("YoungPG — Social Logs") ||
-  label.includes("Nexa — Official Numbers") ||
-  label.includes("Nexa — Social Boosting")
-    ? `<button class="secondary provider-test-btn"
-        data-product="${
-          label.includes("Visual Numbers")
-            ? "visual_numbers"
-            : label.includes("Social Logs")
-              ? "social_logs"
-              : label.includes("Official Numbers")
-                ? "official_numbers"
-                : "social_boosting"
-        }">
-        Test Connection
-      </button>`
-    : "—"}
-</td>
+                        label.includes("YoungPG — Social Logs") ||
+                        label.includes("Nexa — Visual Numbers")
+                          ? `<button class="secondary provider-test-btn"
+                              data-product="${
+                                label.includes("YoungPG — Visual Numbers")
+                                  ? "visual_numbers"
+                                  : label.includes("YoungPG — Social Logs")
+                                    ? "social_logs"
+                                    : "official_numbers"
+                              }">
+                              Test Connection
+                            </button>`
+                          : "—"}
                     </tr>
                   `;
                 }).join("")}
@@ -1802,7 +1797,7 @@ holder.querySelectorAll(".provider-test-btn").forEach(button => {
     }
   }
 async function testProviderConnection(product, button) {
-    if (!["visual_numbers", "social_logs", "official_numbers", "social_boosting"].includes(product)) {
+    if (!["visual_numbers", "social_logs", "official_numbers"].includes(product)) {
       toast("Unsupported provider test.", true);
       return;
     }
