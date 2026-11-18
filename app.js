@@ -2244,7 +2244,156 @@ async function prepareLiveCatalogue() {
       `<p class="muted">Nexar API is not configured. Social Boosting will be available after API credentials are added.</p>`;
     return;
   }
+if (product === "nexa_visual_numbers") {
+controls.innerHTML = `
+<div class="field-grid">
+<div class="field">
+<label for="nexaCatalogueDriver">Nexa Driver</label>
+<select id="nexaCatalogueDriver">
+<option value="prime">Prime</option>
+<option value="alternate">Alternate</option>
+</select>
+</div>
 
+    <div class="field">
+      <label for="nexaCatalogueCountrySearch">Search country</label>
+      <input id="nexaCatalogueCountrySearch"
+        type="search" placeholder="Search countries...">
+
+      <label for="nexaCatalogueCountry">Country</label>
+      <select id="nexaCatalogueCountry">
+        <option value="">Loading countries...</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="nexaCatalogueServiceSearch">Search service</label>
+      <input id="nexaCatalogueServiceSearch"
+        type="search" placeholder="Search services...">
+
+      <label for="nexaCatalogueService">Service</label>
+      <select id="nexaCatalogueService">
+        <option value="">Loading services...</option>
+      </select>
+    </div>
+  </div>
+
+  <p id="nexaCatalogueStatus" class="muted">
+    Loading Nexa catalogue...
+  </p>
+`;
+
+const driverSelect = $("nexaCatalogueDriver");
+
+const filterSelect = (searchId, selectId) => {
+  $(searchId).oninput = () => {
+    const query = $(searchId).value.toLowerCase().trim();
+
+    Array.from($(selectId).options).forEach((option, index) => {
+      if (index === 0) return;
+
+      option.hidden =
+        !option.textContent.toLowerCase().includes(query);
+    });
+  };
+};
+
+filterSelect(
+  "nexaCatalogueCountrySearch",
+  "nexaCatalogueCountry"
+);
+
+filterSelect(
+  "nexaCatalogueServiceSearch",
+  "nexaCatalogueService"
+);
+
+const loadNexaOptions = async () => {
+  const driver = driverSelect.value;
+  const status = $("nexaCatalogueStatus");
+
+  status.textContent = `Loading Nexa ${driver} countries and services...`;
+
+  $("nexaCatalogueCountry").innerHTML =
+    `<option value="">Loading countries...</option>`;
+
+  $("nexaCatalogueService").innerHTML =
+    `<option value="">Loading services...</option>`;
+
+  try {
+    const [countryResult, serviceResult] = await Promise.all([
+      api(`/api/admin/catalogue/nexa-visual-numbers/countries?driver=${driver}`),
+      api(`/api/admin/catalogue/nexa-visual-numbers/services?driver=${driver}`)
+    ]);
+
+    const countries = catalogueArray(countryResult.countries);
+    const services = catalogueArray(serviceResult.services);
+
+    const getCode = item => {
+      if (typeof item === "string") return item;
+
+      return String(
+        item.id ??
+        item.code ??
+        item.country_id ??
+        item.country_code ??
+        item.value ??
+        ""
+      ).trim();
+    };
+
+    const getServiceCode = item => {
+      if (typeof item === "string") return item;
+
+      return String(
+        item.id ??
+        item.code ??
+        item.service_id ??
+        item.service ??
+        item.value ??
+        ""
+      ).trim();
+    };
+
+    $("nexaCatalogueCountry").innerHTML =
+      `<option value="">Select country</option>` +
+      countries.map(item => {
+        const code = getCode(item);
+        if (!code) return "";
+
+        return `<option value="${escapeHtml(code)}">${escapeHtml(catalogueLabel(item))}</option>`;
+      }).join("");
+
+    $("nexaCatalogueService").innerHTML =
+      `<option value="">Select service</option>` +
+      services.map(item => {
+        const code = getServiceCode(item);
+        if (!code) return "";
+
+        return `<option value="${escapeHtml(code)}">${escapeHtml(catalogueLabel(item))}</option>`;
+      }).join("");
+
+    status.textContent =
+      `Nexa ${driver}: ${countries.length} countries and ${services.length} services loaded.`;
+
+  } catch (error) {
+    $("nexaCatalogueCountry").innerHTML =
+      `<option value="">Countries unavailable</option>`;
+
+    $("nexaCatalogueService").innerHTML =
+      `<option value="">Services unavailable</option>`;
+
+    status.textContent =
+      `Nexa catalogue error: ${error.message}`;
+  }
+};
+
+driverSelect.onchange = loadNexaOptions;
+
+await loadNexaOptions();
+return;
+
+}
   if (product === "visual_numbers") {
     controls.innerHTML = `
       <div class="field-grid">
