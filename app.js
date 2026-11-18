@@ -1759,14 +1759,22 @@ function renderNexarInbox() {
                       <td>${escapeHtml(details)}</td>
                       <td>
   ${label.includes("YoungPG — Visual Numbers") ||
-    label.includes("YoungPG — Social Logs")
-      ? `<button class="secondary provider-test-btn"
-          data-product="${label.includes("Visual Numbers")
+  label.includes("YoungPG — Social Logs") ||
+  label.includes("Nexa — Official Numbers") ||
+  label.includes("Nexa — Social Boosting")
+    ? `<button class="secondary provider-test-btn"
+        data-product="${
+          label.includes("Visual Numbers")
             ? "visual_numbers"
-            : "social_logs"}">
-          Test Connection
-        </button>`
-      : "—"}
+            : label.includes("Social Logs")
+              ? "social_logs"
+              : label.includes("Official Numbers")
+                ? "official_numbers"
+                : "social_boosting"
+        }">
+        Test Connection
+      </button>`
+    : "—"}
 </td>
                     </tr>
                   `;
@@ -1794,7 +1802,7 @@ holder.querySelectorAll(".provider-test-btn").forEach(button => {
     }
   }
 async function testProviderConnection(product, button) {
-    if (!["visual_numbers", "social_logs"].includes(product)) {
+    if (!["visual_numbers", "social_logs", "official_numbers", "social_boosting"].includes(product)) {
       toast("Unsupported provider test.", true);
       return;
     }
