@@ -1873,7 +1873,7 @@ async function testProviderConnection(product, button) {
           </div>
 
           <div class="panel">
-            <h3>Social Boosting — Nexar</h3>
+            <h3>Visual Numbers — Nexa</h3>
             <div class="field">
               <label for="globalBoostType">Markup type</label>
               <select id="globalBoostType">
@@ -1887,11 +1887,8 @@ async function testProviderConnection(product, button) {
                 min="0" step="0.01" placeholder="0">
             </div>
             <button class="primary" id="saveGlobalBoost">
-              Save Social Boosting Markup
+              Save Nexa Visual Numbers Markup
             </button>
-            <p class="muted">
-              This setting is prepared for when Nexar API access is configured.
-            </p>
           </div>
 
         </div>
@@ -1905,11 +1902,10 @@ async function testProviderConnection(product, button) {
       `
         <div class="field-grid">
           <div class="field">
-            <label for="liveCatalogueProduct">Product</label>
             <select id="liveCatalogueProduct">
               <option value="visual_numbers">Visual Numbers — YoungPG</option>
               <option value="social_logs">Social Logs — YoungPG</option>
-              <option value="social_boosting">Social Boosting — Nexar</option>
+              <option value="nexa_visual_numbers">Visual Numbers — Nexa</option>
             </select>
           </div>
         </div>
