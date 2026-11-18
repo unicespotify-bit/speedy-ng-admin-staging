@@ -16,6 +16,7 @@
     orders: [],
     deposits: [],
       announcements: [],
+    nexarNotifications: [],
 
     // Customer support inbox
     supportConversations: [],
@@ -104,6 +105,12 @@
       "Announcements & Support",
       "Support and announcement controls."
     ],
+    "nexar-inbox": [
+  "Nexa Inbox",
+  "PROVIDER NOTIFICATIONS",
+  "Nexa Notifications",
+  "View incoming Nexa events and manage notifications privately in the admin dashboard."
+],
     settings: [
       "Admin Settings",
       "PLATFORM CONFIGURATION",
