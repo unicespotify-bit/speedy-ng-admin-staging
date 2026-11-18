@@ -409,7 +409,8 @@ const loaders = {
       settings: loadSettings,
       "email-verification": loadEmailVerification,
       activity: loadAudit,
-      support: loadAnnouncements
+      support: loadAnnouncements,
+"nexar-inbox": loadNexarNotifications
     };
 
     if (loaders[page]) {
@@ -493,7 +494,8 @@ const loaders = {
       settings: renderSettings,
       activity: renderActivity,
       "email-verification": renderEmailVerification,
-      support: renderSupport
+      support: renderSupport,
+"nexar-inbox": renderNexarInbox
     };
 
     body.innerHTML = renderers[page]
@@ -502,7 +504,103 @@ const loaders = {
 
     attachPageEvents(page);
   }
+async function loadNexarNotifications() {
+  try {
+    const result = await api("/api/admin/nexar/notifications");
 
+    state.nexarNotifications = result.notifications || [];
+
+    if (state.page === "nexar-inbox") {
+      renderPage("nexar-inbox");
+    }
+  } catch (error) {
+    state.nexarNotifications = [];
+    toast("Could not load Nexa notifications: " + error.message, true);
+
+    if (state.page === "nexar-inbox") {
+      renderPage("nexar-inbox");
+    }
+  }
+}
+
+function renderNexarInbox() {
+  const notifications = state.nexarNotifications || [];
+  const unread = notifications.filter(item => !item.read_at).length;
+
+  const rows = notifications.length
+    ? notifications.map(item => `
+        <tr>
+          <td>${escapeHtml(item.event_type || "Unknown event")}</td>
+          <td>${escapeHtml(item.order_reference || "—")}</td>
+          <td>${escapeHtml(item.customer_reference || "—")}</td>
+          <td>${escapeHtml(formatDate(item.received_at))}</td>
+          <td>${item.read_at ? statusBadge("Read") : statusBadge("Unread")}</td>
+          <td>
+            ${item.read_at
+              ? "—"
+              : `<button class="btn small" data-nexar-read="${escapeHtml(item.event_id)}">Mark as Read</button>`}
+          </td>
+        </tr>
+        <tr>
+          <td colspan="6">
+            <details>
+              <summary>View notification details</summary>
+              <pre style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:350px;overflow:auto;">${escapeHtml(
+                (() => {
+                  try {
+                    return JSON.stringify(JSON.parse(item.payload_json || "{}"), null, 2);
+                  } catch {
+                    return item.payload_json || "No details available.";
+                  }
+                })()
+              )}</pre>
+            </details>
+          </td>
+        </tr>
+      `).join("")
+    : `<tr><td colspan="6" class="muted">No Nexa notifications have been received yet.</td></tr>`;
+
+  return `
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Nexa Notification Inbox</h3>
+          <p class="muted">Nexa notifications are visible here to administrators only.</p>
+        </div>
+        <button class="btn" id="refreshNexarInboxBtn">Refresh Inbox</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Total Notifications</span>
+          <strong>${notifications.length}</strong>
+        </div>
+        <div class="stat-card">
+          <span>Unread Notifications</span>
+          <strong>${unread}</strong>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Order Reference</th>
+              <th>Customer Reference</th>
+              <th>Received</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="nexarNotificationsTable">
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+                }
   function renderEmailVerification() {
     return `
       <div id="emailVerificationPanel">
