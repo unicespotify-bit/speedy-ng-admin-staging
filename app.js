@@ -3256,11 +3256,11 @@ $("saveGlobalLogs").onclick = () =>
 $("saveGlobalBoost").onclick = () =>
   saveGlobalMarkup(
     "nexar",
-    "social_boosting",
+    "visual_numbers",
     "globalBoostType",
     "globalBoostValue",
     "saveGlobalBoost",
-    "Save Social Boosting Markup"
+    "Save Nexa Visual Numbers Markup"
   );
       $("pricingSearch").addEventListener(
         "input",
