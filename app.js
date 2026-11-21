@@ -3371,8 +3371,8 @@ $("pricingTable").onclick = async event => {
     if (page === "settings") {
       $("reloadSettingsBtn").onclick = loadSettings;
       $("saveSettingsBtn").onclick = saveSettings;
+      $("saveTelegramBtn").onclick = saveTelegramSettings;
     }
-    $("saveTelegramBtn").onclick = saveTelegramSettings;
 
     if (page === "exchange") {
       $("saveExchangeBtn").onclick = saveExchangeRate;
