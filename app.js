@@ -3044,7 +3044,33 @@ function renderSettings() {
           Reload settings
         </button>
       </div>
+  <div class="field">
+        <label for="telegramUrl">Telegram link</label>
+        <input
+          id="telegramUrl"
+          type="url"
+          placeholder="https://t.me/fastsms44"
+        >
+      </div>
 
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:10px">
+          <input
+            id="telegramEnabled"
+            type="checkbox"
+            style="width:18px;height:18px"
+          >
+          Enable Telegram button on customer website
+        </label>
+      </div>
+
+      <button class="primary" id="saveTelegramBtn">
+        Save Telegram Settings
+      </button>
+
+      <p class="muted">
+        These settings control the Telegram button shown to customers.
+      </p>
       <div class="field">
         <label for="settingsJson">Settings (JSON)</label>
         <textarea id="settingsJson" rows="16"
@@ -3067,7 +3093,18 @@ function renderSettings() {
       const result = await api("/api/admin/settings");
 
       state.settings = result.settings || {};
+   const telegramUrl = $("telegramUrl");
+      const telegramEnabled = $("telegramEnabled");
 
+      if (telegramUrl) {
+        telegramUrl.value =
+          state.settings.support_telegram || "https://t.me/fastsms44";
+      }
+
+      if (telegramEnabled) {
+        telegramEnabled.checked =
+          state.settings.support_telegram_enabled !== "false";
+      }
       const area = $("settingsJson");
 
       if (area) {
@@ -3116,7 +3153,41 @@ function renderSettings() {
       button.disabled = false;
     }
   }
+async function saveTelegramSettings() {
+    const url = $("telegramUrl").value.trim();
+    const enabled = $("telegramEnabled").checked;
 
+    if (
+      url &&
+      !/^https:\/\/t\.me\/[A-Za-z0-9_+/?=-]+$/.test(url)
+    ) {
+      toast("Enter a valid Telegram link.", true);
+      return;
+    }
+
+    const button = $("saveTelegramBtn");
+    button.disabled = true;
+
+    try {
+      await api("/api/admin/settings", {
+        method: "POST",
+        body: JSON.stringify({
+          settings: {
+            support_telegram: url,
+            support_telegram_enabled: enabled ? "true" : "false"
+          }
+        })
+      });
+
+      toast("Telegram settings saved.");
+      await loadSettings();
+
+    } catch (error) {
+      toast("Could not save Telegram settings: " + error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+}
   async function saveExchangeRate() {
     const rate = Number($("exchangeRate").value);
 
@@ -3301,6 +3372,7 @@ $("pricingTable").onclick = async event => {
       $("reloadSettingsBtn").onclick = loadSettings;
       $("saveSettingsBtn").onclick = saveSettings;
     }
+    $("saveTelegramBtn").onclick = saveTelegramSettings;
 
     if (page === "exchange") {
       $("saveExchangeBtn").onclick = saveExchangeRate;
