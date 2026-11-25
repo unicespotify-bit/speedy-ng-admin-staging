@@ -2388,7 +2388,79 @@ const loadNexaOptions = async () => {
         ""
       ).trim();
     };
+    // Connect Nexa Visual Numbers catalogue to pricing rules.
+    const ruleProvider = $("ruleProvider");
+    const ruleProduct = $("ruleProduct");
+    const ruleCountry = $("ruleCountry");
+    const ruleService = $("ruleService");
 
+    if (ruleProvider) {
+      ruleProvider.value = "nexar";
+    }
+
+    if (ruleProduct) {
+      ruleProduct.value = "visual_numbers";
+    }
+
+    if (ruleCountry) {
+      ruleCountry.innerHTML =
+        `<option value="*">All countries (*)</option>` +
+        countries.map(item => {
+          const code = getCode(item);
+          if (!code) return "";
+
+          return `<option value="${escapeHtml(code)}">${escapeHtml(catalogueLabel(item))} (${escapeHtml(code)})</option>`;
+        }).join("");
+
+      ruleCountry.value = "*";
+    }
+
+    if (ruleService) {
+      ruleService.innerHTML =
+        `<option value="*">All services (*)</option>` +
+        services.map(item => {
+          const code = getServiceCode(item);
+          if (!code) return "";
+
+          return `<option value="${escapeHtml(code)}">${escapeHtml(catalogueLabel(item))} (${escapeHtml(code)})</option>`;
+        }).join("");
+
+      ruleService.value = "*";
+    }
+
+    const ruleCountrySearch = $("ruleCountrySearch");
+
+    if (ruleCountrySearch && ruleCountry) {
+      ruleCountrySearch.value = "";
+
+      ruleCountrySearch.oninput = () => {
+        const query = ruleCountrySearch.value.toLowerCase().trim();
+
+        Array.from(ruleCountry.options).forEach((option, index) => {
+          if (index === 0) return;
+
+          option.hidden =
+            !option.textContent.toLowerCase().includes(query);
+        });
+      };
+    }
+
+    const ruleServiceSearch = $("ruleServiceSearch");
+
+    if (ruleServiceSearch && ruleService) {
+      ruleServiceSearch.value = "";
+
+      ruleServiceSearch.oninput = () => {
+        const query = ruleServiceSearch.value.toLowerCase().trim();
+
+        Array.from(ruleService.options).forEach((option, index) => {
+          if (index === 0) return;
+
+          option.hidden =
+            !option.textContent.toLowerCase().includes(query);
+        });
+      };
+        }
     $("nexaCatalogueCountry").innerHTML =
       `<option value="">Select country</option>` +
       countries.map(item => {
