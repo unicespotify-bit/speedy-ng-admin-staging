@@ -2366,30 +2366,30 @@ const loadNexaOptions = async () => {
     const services = catalogueArray(serviceResult.services);
 
     const getCode = item => {
-      if (typeof item === "string") return item;
+  if (typeof item === "string") return item;
 
-      return String(
-        item.id ??
-        item.code ??
-        item.country_id ??
-        item.country_code ??
-        item.value ??
-        ""
-      ).trim();
-    };
+  return String(
+    item.country_id ??
+    item.id ??
+    item.code ??
+    item.country_code ??
+    item.value ??
+    ""
+  ).trim();
+};
 
-    const getServiceCode = item => {
-      if (typeof item === "string") return item;
+const getServiceCode = item => {
+  if (typeof item === "string") return item;
 
-      return String(
-        item.id ??
-        item.code ??
-        item.service_id ??
-        item.service ??
-        item.value ??
-        ""
-      ).trim();
-    };
+  return String(
+    item.service_id ??
+    item.id ??
+    item.code ??
+    item.service ??
+    item.value ??
+    ""
+  ).trim();
+};
     // Connect Nexa Visual Numbers catalogue to pricing rules.
     const ruleProvider = $("ruleProvider");
     const ruleProduct = $("ruleProduct");
