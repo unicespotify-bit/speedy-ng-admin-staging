@@ -2396,10 +2396,6 @@ const loadNexaOptions = async () => {
     const ruleCountry = $("ruleCountry");
     const ruleService = $("ruleService");
 
-    if (ruleProvider) {
-      ruleProvider.value = "nexar";
-    }
-
     if (ruleProduct) {
       ruleProduct.value = "visual_numbers";
     }
