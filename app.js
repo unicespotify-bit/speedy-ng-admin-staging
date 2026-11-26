@@ -1960,10 +1960,12 @@ async function testProviderConnection(product, button) {
         <div class="field-grid">
           <div class="field">
             <label for="ruleProvider">Provider</label>
-            <select id="ruleProvider">
+                        <select id="ruleProvider">
               <option value="youngpg_virtual">YoungPG Visual Numbers</option>
               <option value="youngpg_media">YoungPG Social Logs</option>
-              <option value="nexar">Nexar</option>
+              <option value="nexar">Nexa Global Markup (fallback)</option>
+              <option value="nexar_prime">Nexa Server 1 — Prime</option>
+              <option value="nexar_alternate">Nexa Server 2 — Alternate</option>
               <option value="*">All providers</option>
             </select>
           </div>
