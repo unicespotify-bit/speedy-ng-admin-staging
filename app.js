@@ -3665,23 +3665,7 @@ $("pricingTable").onclick = async event => {
         state.token
       );
 
-      const me = await api("/api/admin/me");
-
-      if (
-        me.ok === false ||
-        me.authenticated === false
-      ) {
-        throw new Error(
-          "The server did not verify the new administrator session."
-        );
-      }
-
-      showApp(
-        me.admin ||
-        me.user ||
-        result.admin ||
-        me
-      );
+      showApp(result.admin);
 
       toast("Administrator login successful.");
 
