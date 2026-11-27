@@ -2390,15 +2390,22 @@ const getServiceCode = item => {
     ""
   ).trim();
 };
-    // Connect Nexa Visual Numbers catalogue to pricing rules.
-    const ruleProvider = $("ruleProvider");
-    const ruleProduct = $("ruleProduct");
-    const ruleCountry = $("ruleCountry");
-    const ruleService = $("ruleService");
+    // Connect the selected Nexa server to its pricing rule.
+const ruleProvider = $("ruleProvider");
+const ruleProduct = $("ruleProduct");
+const ruleCountry = $("ruleCountry");
+const ruleService = $("ruleService");
 
-    if (ruleProduct) {
-      ruleProduct.value = "visual_numbers";
-    }
+if (ruleProvider) {
+  ruleProvider.value =
+    driver === "alternate"
+      ? "nexar_alternate"
+      : "nexar_prime";
+}
+
+if (ruleProduct) {
+  ruleProduct.value = "visual_numbers";
+}
 
     if (ruleCountry) {
       ruleCountry.innerHTML =
